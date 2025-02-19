@@ -1,9 +1,11 @@
 import React, { useState, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -56,6 +58,7 @@ const Login = () => {
       );
       console.log("Login Response:", response.data);
       alert("Login successful");
+      navigate("/myprofile");
     } catch (err) {
       setErrorMessage(err.response?.data?.error || "Login failed");
     }

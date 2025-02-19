@@ -1,18 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const MyProfile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const fetchProfileData = async () => {
+    try {
+      setErrorMessage("");
+      const profileData = await axios.get("http://localhost:8000/api/userProfile", {
+        withCredentials: true,
+      });
+      console.log(profileData)
+      if (profileData.data) {
+        setUser(profileData.data);
+      } else {
+        alert("No user found! Please log in.");
+        navigate("/login");
+      }
+    } catch (error) {
+      setErrorMessage(error.response?.data?.error || "Error in fetching your profile");
+      alert("Please try again later");
+    }
+  };
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser) {
-      setUser(storedUser);
-    } else {
-      alert("No user found! Please log in.");
-      navigate("/login");
-    }
+    fetchProfileData();
   }, [navigate]);
 
   return (
@@ -24,7 +39,9 @@ const MyProfile = () => {
             <div className="mb-3"><strong>First Name:</strong> {user.firstName}</div>
             <div className="mb-3"><strong>Last Name:</strong> {user.lastName}</div>
             <div className="mb-3"><strong>Email:</strong> {user.email}</div>
-
+            {errorMessage && (
+              <p className="text-red-500 text-sm text-center mb-3">{errorMessage}</p>
+            )}
             <button className="btn btn-primary w-full mt-4" onClick={() => navigate("/update-profile")}>
               Update Profile
             </button>
