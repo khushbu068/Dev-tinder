@@ -7,6 +7,7 @@ import Footer from "./components/Footer";
 import UpdateProfile from "./components/UpdateProfile";
 import MyProfile from "./components/MyProfile";
 import Login from "./components/Login";
+import Connections from "./components/Connections";
 
 function AppLayout() {
   return (
@@ -44,7 +45,10 @@ const Router = createBrowserRouter([
         path: "/login",
         element: <Login />,
       },
-     
+     {
+      path: "/connections",
+      element: <Connections />,
+     }
     ],
   },
 ]);

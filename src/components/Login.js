@@ -59,7 +59,9 @@ const Login = () => {
       );
       console.log("Login Response:", response.data);
       alert("Login successful");
-      navigate("/myprofile");
+      //navigate("/myprofile");
+      navigate("/connections");
+
     } catch (err) {
       setErrorMessage(err.response?.data?.error || "Login failed");
     }
