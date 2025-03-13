@@ -1,46 +1,57 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setUsers, nextUser, prevUser } from "../redux/userSlice";
 import axios from "axios";
 
 const Connections = () => {
-  const [users, setUsers] = useState([]);
+  const dispatch = useDispatch();
+  const { users, currentIndex } = useSelector((state) => state.users);
+
+  console.log("Users in Redux:", users); // 🛠️ Debugging
+  console.log("Current Index:", currentIndex); // 🛠️ Debugging
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get("http://localhost:8000/api/feed", {
           withCredentials: true,
         });
-
-        if (response.data.success && Array.isArray(response.data.feedUsers)) {
-          setUsers(response.data.feedUsers);
-        } else {
-          setUsers([]); 
-        }
+        console.log("Fetched Users:", response.data.feedUsers); // 🛠️ Debugging
+        dispatch(setUsers(response.data.feedUsers)); // Store in Redux
       } catch (error) {
         console.error("Error fetching users:", error);
-        setUsers([]);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [dispatch]);
 
   return (
-    <div className="container mx-auto mt-10 p-6 bg-white shadow-md rounded-md">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h2 className="text-2xl font-semibold mb-4">Connections</h2>
+
       {users.length > 0 ? (
-        <ul className="space-y-3">
-          {users.map((user) => (
-            <li
-              key={user._id}
-              className="p-4 border rounded-md shadow-sm bg-gray-100"
+        <div className="w-96 p-6 bg-white shadow-lg rounded-lg text-center">
+          <p className="text-xl font-bold">
+            {users[currentIndex]?.firstName} {users[currentIndex]?.lastName}
+          </p>
+          <p className="text-gray-600">{users[currentIndex]?.email}</p>
+
+          <div className="flex justify-between mt-4">
+            <button
+              onClick={() => dispatch(prevUser())}
+              className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
             >
-              <p className="text-lg font-medium">
-                {user.firstName} {user.lastName}
-              </p>
-              <p className="text-sm text-gray-600">{user.email}</p>
-            </li>
-          ))}
-        </ul>
+              Previous
+            </button>
+            <button
+              onClick={() => dispatch(nextUser())}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       ) : (
         <p className="text-gray-500">No users found.</p>
       )}
