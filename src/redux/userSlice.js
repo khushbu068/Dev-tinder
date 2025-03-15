@@ -4,6 +4,8 @@ const userSlice = createSlice({
   name: "users",
   initialState: {
     users: [],
+    interestedUsers: [],
+    ignoredUsers: [],
     currentIndex: 0,
   },
   reducers: {
@@ -11,21 +13,25 @@ const userSlice = createSlice({
       state.users = action.payload || [];
       state.currentIndex = 0;
     },
-    nextUser: (state) => {
-      if (state.users.length > 0) {
-        state.currentIndex = (state.currentIndex + 1) % state.users.length;
+    sendRequest: (state, action) => {
+      const { userId, actionType } = action.payload;
+      const user = state.users.find((user) => user._id === userId);
+
+      if (user) {
+        if (actionType === "interested") {
+          state.interestedUsers.push(user);
+        } else {
+          state.ignoredUsers.push(user);
+        }
       }
-    },
-    prevUser: (state) => {
-      if (state.users.length > 0) {
-        state.currentIndex =
-          state.currentIndex === 0
-            ? state.users.length - 1
-            : state.currentIndex - 1;
+
+      state.users = state.users.filter((user) => user._id !== userId);
+      if (state.currentIndex >= state.users.length) {
+        state.currentIndex = 0;
       }
     },
   },
 });
 
-export const { setUsers, nextUser, prevUser } = userSlice.actions;
-export default userSlice.reducer; // Ensure this is exported as default
+export const { setUsers, sendRequest } = userSlice.actions;
+export default userSlice.reducer;
