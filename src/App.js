@@ -1,12 +1,14 @@
 import "./index.css";
-
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import UpdateProfile from "./components/UpdateProfile";
 import MyProfile from "./components/MyProfile";
 import Login from "./components/Login";
+import Connections from "./components/Connections";
 import GetAllRequests from "./components/GetAllRequests";
 
 function AppLayout() {
@@ -24,7 +26,7 @@ function AppLayout() {
   );
 }
 
-const Router = createBrowserRouter([
+const router = createBrowserRouter([
   {
     path: "/",
     element: <AppLayout />,
@@ -46,6 +48,10 @@ const Router = createBrowserRouter([
         element: <Login />,
       },
       {
+        path: "/connections",
+        element: <Connections />,
+      },
+      {
         path: "request",
         element: <GetAllRequests/>
       }
@@ -55,7 +61,11 @@ const Router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={Router}></RouterProvider>;
+  return (
+    <Provider store={store}>
+      <RouterProvider router={router} />
+    </Provider>
+  );
 }
 
 export default App;
