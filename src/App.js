@@ -52,7 +52,7 @@ const router = createBrowserRouter([
         element: <Connections />,
       },
       {
-        path: "request",
+        path: "/requests",
         element: <GetAllRequests/>
       }
      
