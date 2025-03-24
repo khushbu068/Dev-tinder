@@ -7,6 +7,7 @@ import Footer from "./components/Footer";
 import UpdateProfile from "./components/UpdateProfile";
 import MyProfile from "./components/MyProfile";
 import Login from "./components/Login";
+import GetAllRequests from "./components/GetAllRequests";
 
 function AppLayout() {
   return (
@@ -44,6 +45,10 @@ const Router = createBrowserRouter([
         path: "/login",
         element: <Login />,
       },
+      {
+        path: "request",
+        element: <GetAllRequests/>
+      }
      
     ],
   },
