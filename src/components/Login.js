@@ -4,12 +4,20 @@ import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { loginSuccess, setUsers } from "../redux/userSlice";
+import { useDispatch } from "react-redux";
+
+const fadeIn = {
+  hidden: { opacity: 0, y: -10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const firstNameRef = useRef(null);
   const lastNameRef = useRef(null);
@@ -24,10 +32,10 @@ const Login = () => {
   const signupUser = async () => {
     setErrorMessage("");
     const userData = {
-      firstName: firstNameRef.current?.value,
-      lastName: lastNameRef.current?.value,
-      email: emailRef.current?.value,
-      password: passwordRef.current?.value,
+      firstName: firstNameRef.current?.value.trim(),
+      lastName: lastNameRef.current?.value.trim(),
+      email: emailRef.current?.value.trim(),
+      password: passwordRef.current?.value.trim(),
     };
 
     try {
@@ -58,10 +66,13 @@ const Login = () => {
         }
       );
       console.log("Login Response:", response.data);
+      localStorage.setItem("token", response.data.token);
+      dispatch(
+        loginSuccess({ token: response.data.token, user: response.data.user })
+      );
+      dispatch(setUsers([response.data.user]));
       alert("Login successful");
-      //navigate("/myprofile");
       navigate("/connections");
-
     } catch (err) {
       setErrorMessage(err.response?.data?.error || "Login failed");
     }
@@ -73,89 +84,81 @@ const Login = () => {
 
   return (
     <motion.div
-      className="flex justify-center items-center p-7"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      variants={fadeIn}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
+      className="flex justify-center items-center p-7"
     >
       <motion.div
-        className="bg-secondary max-w-sm w-full shadow-lg p-6 rounded-lg"
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
+        className="card bg-secondary w-96 shadow-2xl p-6"
       >
-        <h2 className="text-xl text-black font-semibold text-center mb-4">
+        <h2 className="text-xl text-white font-semibold text-center mb-4">
           {isSignup ? "Sign Up" : "Login"}
         </h2>
-
         {isSignup && (
           <>
             <motion.input
               type="text"
               placeholder="First Name"
               ref={firstNameRef}
-              className="input input-bordered bg-gray-100 text-black w-full mb-4 py-2"
+              className="input input-bordered bg-white text-black w-full mb-3"
               whileFocus={{ scale: 1.05 }}
             />
             <motion.input
               type="text"
               placeholder="Last Name"
               ref={lastNameRef}
-              className="input input-bordered bg-gray-100 text-black w-full mb-4 py-2"
+              className="input input-bordered bg-white text-black w-full mb-3"
               whileFocus={{ scale: 1.05 }}
             />
           </>
         )}
-
         <motion.input
           type="email"
           placeholder="Email"
           ref={emailRef}
-          className="input input-bordered bg-gray-100 text-black w-full mb-4 py-2"
+          className="input input-bordered bg-white text-black w-full mb-3"
           whileFocus={{ scale: 1.05 }}
         />
-
-        <div className="relative w-full mb-4">
+          <div className="relative w-full mb-3">
           <motion.input
             type={showPassword ? "text" : "password"}
             placeholder="Password"
             ref={passwordRef}
-            className="input input-bordered bg-gray-100 text-black w-full py-2 pr-10"
+            className="input input-bordered bg-white text-black w-full pr-10"
             whileFocus={{ scale: 1.05 }}
           />
           <button
             type="button"
-            className="absolute right-3 top-1/2 transform -translate-y-1/2"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
             onClick={() => setShowPassword(!showPassword)}
           >
-            <FontAwesomeIcon
-              icon={showPassword ? faEyeSlash : faEye}
-              className="text-gray-600"
-            />
+            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
           </button>
         </div>
-
         {errorMessage && (
           <motion.p
-            className="text-red-500 text-sm text-center mb-3 p-2 bg-red-100 rounded-md"
+            className="text-highlight text-sm text-center mb-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
             {errorMessage}
           </motion.p>
         )}
-
         <motion.button
-          className="btn btn-primary bg-primary text-white w-full py-2"
+          className="btn btn-primary bg-primary text-white w-full"
           onClick={handleSubmit}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           {isSignup ? "Sign Up" : "Login"}
         </motion.button>
-
         <p
-          className="text-center text-black mt-4 cursor-pointer hover:underline"
+          className="text-center text-white mt-3 cursor-pointer"
           onClick={toggleSignup}
         >
           {isSignup

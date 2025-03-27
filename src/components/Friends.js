@@ -10,7 +10,7 @@ const Friends = () => {
 
   const fetchFriends = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/getallfriends", {
+      const res = await axios.get("http://localhost:8000/api/request/getAllUserFriends", {
         withCredentials: true,
       });
       setFriends(res.data.data || []);
@@ -34,7 +34,7 @@ const Friends = () => {
           </div>
         ))
       ) : (
-        <p className="text-lg text-gray-400">No friends yet.</p>
+        <p className="text-lg text-white">No friends yet.</p>
       )}
     </div>
   );

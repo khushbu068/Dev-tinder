@@ -1,5 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const initialState = {
+  users: [],
+  authenticated: false,
+  token: null,
+};
+
 const userSlice = createSlice({
   name: "users",
   initialState: {
@@ -7,6 +13,7 @@ const userSlice = createSlice({
     interestedUsers: [],
     ignoredUsers: [],
     currentIndex: 0,
+    isAuthenticated: !!localStorage.getItem("token"),
   },
   reducers: {
     setUsers: (state, action) => {
@@ -30,8 +37,29 @@ const userSlice = createSlice({
         state.currentIndex = 0;
       }
     },
+    logoutUser: (state) => {
+      state.users = [];
+      state.interestedUsers = [];
+      state.ignoredUsers = [];
+      state.currentIndex = 0;
+      state.isAuthenticated = false;
+      state.token = null;
+      localStorage.removeItem("token");
+    },
+    loginSuccess: (state, action) => {
+      const { token, user } = action.payload;
+      if (!user || !token) {
+        return;
+      }
+
+      localStorage.setItem("token", token);
+      state.isAuthenticated = true;
+      state.token = action.payload.token;
+      state.users = [user];
+    },
   },
 });
 
-export const { setUsers, sendRequest } = userSlice.actions;
+export const { setUsers, sendRequest, logoutUser, loginSuccess } =
+  userSlice.actions;
 export default userSlice.reducer;

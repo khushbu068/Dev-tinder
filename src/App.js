@@ -1,7 +1,6 @@
 import "./index.css";
+
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
-import { Provider } from "react-redux";
-import { store } from "./redux/store";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -9,7 +8,11 @@ import UpdateProfile from "./components/UpdateProfile";
 import MyProfile from "./components/MyProfile";
 import Login from "./components/Login";
 import Connections from "./components/Connections";
-import GetAllRequests from "./components/GetAllRequests";
+import { Provider } from "react-redux";
+import ReceiveRequests from "./components/ReceiveRequests";
+import Friends from "./components/Friends";
+import ProtectedRoute from "./components/ProtectedRoute";
+import store from "../src/redux/store";
 
 function AppLayout() {
   return (
@@ -26,36 +29,23 @@ function AppLayout() {
   );
 }
 
-const router = createBrowserRouter([
+const Router = createBrowserRouter([
   {
     path: "/",
     element: <AppLayout />,
     children: [
       {
-        path: "/home",
-        element: <Login />,
+        path: "/",
+        element: <ProtectedRoute />,
+        children: [
+          { path: "/connections", element: <Connections /> },
+          { path: "/myprofile", element: <MyProfile /> },
+          { path: "/updateprofile", element: <UpdateProfile /> },
+          { path: "/receive-requests", element: <ReceiveRequests /> },
+          { path: "/friends", element: <Friends /> },
+        ],
       },
-      {
-        path: "/myprofile",
-        element: <MyProfile />,
-      },
-      {
-        path: "/update-profile",
-        element: <UpdateProfile />,
-      },
-      {
-        path: "/login",
-        element: <Login />,
-      },
-      {
-        path: "/connections",
-        element: <Connections />,
-      },
-      {
-        path: "/requests",
-        element: <GetAllRequests/>
-      }
-     
+      { path: "/login", element: <Login /> },
     ],
   },
 ]);
@@ -63,7 +53,7 @@ const router = createBrowserRouter([
 function App() {
   return (
     <Provider store={store}>
-      <RouterProvider router={router} />
+      <RouterProvider router={Router}></RouterProvider>
     </Provider>
   );
 }

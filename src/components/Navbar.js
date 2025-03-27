@@ -47,6 +47,9 @@ const Navbar = () => {
             <li className="hover:bg-red-500 px-4 py-2 cursor-pointer" onClick={handleLogout}>
               Logout
             </li>
+            <li className="hover:bg-[#98D2C0] px-4 py-2 cursor-pointer" onClick={() => { navigate("/friends"); }}>
+              Friends
+            </li>
           </ul>
         )}
       </div>
@@ -64,7 +67,7 @@ const Navbar = () => {
         </button>
 
         {/* Requests Button */}
-        <Link to="/requests" className="relative">
+        <Link to="/receive-requests" className="relative">
           <FontAwesomeIcon icon={faBell} className="h-6 w-6 text-white hover:text-gray-300 transition" />
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">!</span>
         </Link>
