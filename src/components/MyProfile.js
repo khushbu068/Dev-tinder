@@ -52,11 +52,11 @@ const MyProfile = () => {
           <strong>Email:</strong> {user.email || "N/A"}
         </div>
         <div className="mb-3">
-          <strong>Skills:</strong> {user.skills || "No skills added"}
+          <strong>About:</strong> {user.about || "No skills added"}
         </div>
         <button
           className="btn btn-primary bg-primary text-white w-full mt-4"
-          onClick={() => navigate("/update-profile")}
+          onClick={() => navigate("/updateprofile")}
         >
           Update Profile
         </button>

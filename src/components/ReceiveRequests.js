@@ -1,36 +1,31 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React from "react";
+import { useSelector, useDispatch, shallowEqual } from "react-redux";
 import axios from "axios";
-import { setRequests, removeRequest } from "../redux/requestSlice";
+import { removeRequest } from "../redux/requestSlice";
 
 const ReceiveRequests = () => {
   const dispatch = useDispatch();
-  const requests = useSelector((state) => state.requests.receiveRequests);
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
-
-  const fetchRequests = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:8000/api/request/receiverAllConnectionReq",
-        { withCredentials: true }
-      );
-      dispatch(setRequests(res.data.receiveRequests || []));
-    } catch (error) {
-      console.error("Error fetching requests:", error);
-    }
-  };
+  // Use memoized selector and correct path
+  const requests = useSelector(
+    (state) => state.requests.receiveRequests,
+    shallowEqual
+  );
 
   const handleRequestUpdate = async (requestId, status) => {
+    console.log(`Updating request with ID: ${requestId}, Status: ${status}`);
+
+    if (!requestId) {
+      console.error("Invalid request ID:", requestId);
+      return;
+    }
+
     try {
       await axios.post(
-        "http://localhost:8000/api/request/update/${status}/${requestId}",
+        `http://localhost:8000/api/request/update/${status}/${requestId}`,
         {},
         { withCredentials: true }
       );
-
       dispatch(removeRequest(requestId));
     } catch (error) {
       console.error(`Error updating request (${status}):`, error);
@@ -39,7 +34,8 @@ const ReceiveRequests = () => {
 
   return (
     <div className="flex flex-col items-center justify-center mt-10">
-      {requests.length > 0 ? (
+      <h2 className="text-3xl text-white font-bold mb-6">Received Requests</h2>
+      {requests && requests.length > 0 ? (
         requests.map((request) => (
           <div
             key={request._id}
@@ -66,7 +62,7 @@ const ReceiveRequests = () => {
           </div>
         ))
       ) : (
-        <p className="text-3xl font-bold text-white mb-4">
+        <p className="text-xl font-semibold text-white">
           No received requests yet.
         </p>
       )}
