@@ -53,11 +53,16 @@ const FriendProfile = () => {
           <h2 className="card-title text-left mr-1 text-xl font-bold">
             {friend.firstName} {friend.lastName}
           </h2>
+          
           <p className="text-left mr-1 text-gray-700">
-            <strong>Skills:</strong> {friend.skills.length > 0
-              ? friend.skills.join(", ")
-              : "No skills added"}
+               <strong>About:</strong> {friend.about || "No bio provided"}
           </p>
+          <p className="text-left mr-1 text-gray-700">
+          <strong>Skills:</strong> {friend.skills?.length > 0
+            ? friend.skills.join(", ")
+            : "No skills added"}
+          </p>
+
           <div className="card-actions flex justify-end mr-2 mb-2">
               <button
                 className="btn btn-primary bg-primary text-white hover:bg-blue-700 rounded-lg"

@@ -130,6 +130,14 @@ const UpdateProfile = () => {
             value={formData.skills}
             onChange={handleChange}
           />
+           <input
+            type="text"
+            name="about"
+            placeholder="Bio"
+            className="input input-bordered bg-white text-black w-full py-2 px-3 rounded-md"
+            value={formData.about}
+            onChange={handleChange}
+          />
           <button
             type="submit"
             className="btn btn-primary bg-primary text-white w-full py-2 rounded-md"

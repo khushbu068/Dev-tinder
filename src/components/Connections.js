@@ -25,15 +25,15 @@ const Connections = () => {
 
   const handleAction = async (actionType) => {
     if (!currentUser) return;
-  
+
     try {
       const response = await axios.post(
         `http://localhost:8000/api/request/send/${actionType}/${currentUser._id}`,
-        {}, // Empty body since params are in URL
-        { withCredentials: true } // Ensure credentials are included
+        {},
+        { withCredentials: true }
       );
-  
-      console.log("API Response:", response.data); // Debugging
+
+      console.log("API Response:", response.data);
       dispatch(sendRequest({ userId: currentUser._id, actionType }));
     } catch (error) {
       console.error(`Failed to ${actionType} user:`, error.response?.data || error);
@@ -41,34 +41,47 @@ const Connections = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h2 className="text-2xl font-semibold mb-4">Connections</h2>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 overflow-hidden">
+      <h2 className="text-2xl font-semibold mb-6">Feed</h2>
 
       {currentUser ? (
-        <div className="w-96 p-6 bg-white shadow-lg rounded-lg text-center">
-          <p className="text-xl font-bold">
-            {currentUser.firstName} {currentUser.lastName}
-          </p>
-          <p className="text-gray-600">{currentUser.email}</p>
+  <div className="card w-80 bg-base-100 shadow-xl">
+    <figure className="h-40 overflow-hidden">
+      <img
+        src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
+        alt={`${currentUser.firstName} ${currentUser.lastName}`}
+        className="object-cover w-full h-full"
+      />
+    </figure>
 
-          <div className="flex justify-between mt-4">
-            <button
-              onClick={() => handleAction("ignored")}
-              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-            >
-              Ignored
-            </button>
-            <button
-              onClick={() => handleAction("interested")}
-              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-            >
-              Interested
-            </button>
-          </div>
-        </div>
-      ) : (
-        <p className="text-gray-500">No users left to show.</p>
-      )}
+    <div className="card-body p-4">
+      <h2 className="card-title text-lg capitalize">
+        {currentUser.firstName} {currentUser.lastName}
+      </h2>
+      <p className="text-sm text-gray-600">
+        {currentUser.email || "No email provided"}
+      </p>
+
+      <div className="card-actions mt-3 flex justify-between">
+        <button
+          onClick={() => handleAction("ignored")}
+          className="btn bg-red-500 hover:bg-red-600 text-white w-5/12 rounded-md"
+        >
+          Ignored
+        </button>
+        <button
+          onClick={() => handleAction("interested")}
+          className="btn bg-green-500 hover:bg-green-600 text-white w-5/12 rounded-md"
+        >
+          Interested
+        </button>
+      </div>
+    </div>
+  </div>
+) : (
+  <p className="text-gray-500 text-center">No users left to show.</p>
+)}
+
     </div>
   );
 };

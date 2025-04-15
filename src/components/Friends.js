@@ -46,9 +46,10 @@ const Friends = () => {
           </figure>
           <div className="card-body">
             <h2 className="card-title mr-1">{friend.firstName} {friend.lastName}</h2>
-            <p className="text-gray-700 mr-1">
-              <strong>About:</strong> {friend.skills && Array.isArray(friend.skills) && friend.skills.length > 0 ? friend.skills.join(", ") : "No Bio"}
+            <p className="text-left mr-1 text-gray-700">
+               <strong>About:</strong> {friend.about || "No bio provided"}
             </p>
+
             <div className="card-actions flex justify-end mr-2 mb-2">
               <button
                 className="btn btn-primary bg-primary text-white hover:bg-blue-700 rounded-lg"
