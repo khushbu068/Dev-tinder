@@ -19,8 +19,21 @@ const UpdateProfile = () => {
     gender: "",
     password: "",
     skills: "",
+    profileImage: "",
   });
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(formData?.profileImage || "");
+  
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -85,14 +98,7 @@ const UpdateProfile = () => {
             value={formData.email}
             onChange={handleChange}
           />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            className="input input-bordered bg-white text-black w-full py-2 px-3 rounded-md"
-            value={formData.password}
-            onChange={handleChange}
-          />
+          
           <input
             type="text"
             name="phone"
@@ -138,6 +144,19 @@ const UpdateProfile = () => {
             value={formData.about}
             onChange={handleChange}
           />
+          <div className="mb-3 flex justify-between items-center">
+            <div className="flex flex-col items-end">
+              <input
+                type="file"
+                accept="image/*"
+                placeholder="update Profile image"
+                onChange={handleImageChange}
+                
+                className="file-input file-input-bordered w-full max-w-xs"
+              />
+            </div>
+          </div>
+
           <button
             type="submit"
             className="btn btn-primary bg-primary text-white w-full py-2 rounded-md"

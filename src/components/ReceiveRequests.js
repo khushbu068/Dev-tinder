@@ -1,25 +1,35 @@
-import React from "react";
-import { useSelector, useDispatch, shallowEqual } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setRequests, removeRequest } from "../redux/requestSlice";
 import axios from "axios";
-import { removeRequest } from "../redux/requestSlice";
+import { motion } from "framer-motion";
+
+const fadeIn = {
+  hidden: { opacity: 0, y: -10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
 
 const ReceiveRequests = () => {
   const dispatch = useDispatch();
+  const requests = useSelector((state) => state.requests.receiveRequests);
 
-  // Use memoized selector and correct path
-  const requests = useSelector(
-    (state) => state.requests.receiveRequests,
-    shallowEqual
-  );
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const fetchRequests = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:8000/api/receiverAllConnectionReq",
+        { withCredentials: true }
+      );
+      dispatch(setRequests(res.data.receiveRequests || []));
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    }
+  };
 
   const handleRequestUpdate = async (requestId, status) => {
-    console.log(`Updating request with ID: ${requestId}, Status: ${status}`);
-
-    if (!requestId) {
-      console.error("Invalid request ID:", requestId);
-      return;
-    }
-
     try {
       await axios.post(
         `http://localhost:8000/api/request/update/${status}/${requestId}`,
@@ -33,40 +43,78 @@ const ReceiveRequests = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center mt-10">
-      <h2 className="text-3xl text-white font-bold mb-6">Received Requests</h2>
-      {requests && requests.length > 0 ? (
-        requests.map((request) => (
-          <div
-            key={request._id}
-            className="bg-gray-900 p-6 rounded-lg shadow-md w-96 text-white flex justify-between items-center mb-4 border border-gray-700"
-          >
-            <span className="font-semibold">
-              {request.sender?.firstName ?? "Unknown"}{" "}
-              {request.sender?.lastName ?? ""}
-            </span>
-            <div className="flex gap-3">
-              <button
-                onClick={() => handleRequestUpdate(request._id, "accepted")}
-                className="bg-green-500 px-4 py-2 rounded-md text-white font-semibold"
-              >
-                Accept
-              </button>
-              <button
-                onClick={() => handleRequestUpdate(request._id, "rejected")}
-                className="bg-red-500 px-4 py-2 rounded-md text-white font-semibold"
-              >
-                Reject
-              </button>
-            </div>
-          </div>
-        ))
-      ) : (
+    <motion.div
+      className="flex flex-col items-center justify-center mt-0 p-8"
+      initial="hidden"
+      animate="visible"
+      variants={fadeIn}
+    >
+      {requests.length === 0 ? (
         <p className="text-xl font-semibold text-white">
           No received requests yet.
         </p>
+      ) : (
+        <>
+          <h2 className="text-xl font-bold text-white mb-6">
+            Received Requests
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16 w-full max-w-full">
+            {requests.map((request) => (
+              <motion.div
+                key={request._id}
+                className="card w-full shadow-2xl p-6 bg-transparent text-gray-300 backdrop-blur-md border border-gray-600 rounded-lg"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <figure>
+                  <img
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSI_efoBNhpgj44SFexzeYTfsDINdwvsx761A&s"
+                    alt="User"
+                    className="rounded-t-xl w-full h-48 object-cover"
+                  />
+                </figure>
+                <div className="card-body p-4">
+                  <h2 className="card-title">
+                    {request.sender?.firstName ?? "Unknown"}{" "}
+                    {request.sender?.lastName ?? ""}
+                  </h2>
+                  <p>
+                    <strong>Email:</strong> {request.sender?.email || "N/A"}
+                  </p>
+                  <div>
+                    <strong>Skills:</strong>{" "}
+                    {request.sender?.skills && request.sender.skills.length > 0
+                      ? request.sender.skills.join(", ")
+                      : "No skills added"}
+                  </div>
+
+                  <div className="card-actions justify-between mt-4">
+                    <button
+                      onClick={() =>
+                        handleRequestUpdate(request._id, "accepted")
+                      }
+                      className="btn bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition duration-200"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleRequestUpdate(request._id, "rejected")
+                      }
+                      className="btn bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-200"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </>
       )}
-    </div>
+    </motion.div>
   );
 };
 

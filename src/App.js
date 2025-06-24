@@ -1,7 +1,13 @@
 import "./index.css";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
+import {
+  createBrowserRouter,
+  Outlet,
+  RouterProvider,
+  useLocation,
+} from "react-router-dom";
+import { Provider, useDispatch } from "react-redux";
+import { useEffect } from "react";
+import axios from "axios";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -13,78 +19,95 @@ import ReceiveRequests from "./components/ReceiveRequests";
 import Friends from "./components/Friends";
 import ProtectedRoute from "./components/ProtectedRoute";
 import FriendProfile from "./components/FriendProfile";
-import store, { persistor } from "./redux/store"; // <-- make sure this matches your file structure
-import axios from "axios";
+import Chat from "./components/Chat";
+
+import store from "./redux/store";
 import { setRequests } from "./redux/requestSlice";
-import { Outlet } from "react-router-dom";
-import { useDispatch } from "react-redux";  
-import { useEffect } from "react";
+import { setAuthenticated } from "./redux/userSlice"; // ✅ Added import
 
-
-const App = () => {
+// App layout component
+const AppLayout = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+  const showBackgroundImage = isHomePage || location.pathname === "/login";
+
+ 
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const res = await axios.get(
-          "http://localhost:8000/api/request/receiverAllConnectionReq",
-          { withCredentials: true }
-        );
-        // Update to use the correct key 'receiveRequest'
-        dispatch(setRequests(res?.data?.receiveRequest || []));
-      } catch (err) {
-        console.error("Failed to fetch requests", err);
-      }
-    };
-  
-    fetchRequests(); // Fetch once globally after login
+    const token = localStorage.getItem("token");
+    if (token) {
+      dispatch(setAuthenticated(true)); // ✅ Dispatch setAuthenticated from redux
+    }
   }, [dispatch]);
-  
+
   return (
     <div
-      className="App bg-gradient-to-r from-[#205781] via-[#4F959D] to-[#98D2C0]"
-      style={{ display: "flex", flexDirection: "column", height: "100vh" }}
+      className="App"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        position: "relative",
+        backgroundImage: showBackgroundImage
+          ? "url('/developer background.jpg')"
+          : "none",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        color: "#fff",
+      }}
     >
+      {isHomePage && (
+        <div className="absolute top-1/3 w-full text-center z-10 px-4">
+          <h1 className="text-white text-4xl md:text-6xl font-extrabold drop-shadow-lg tracking-tight font-[Poppins]">
+            Where Developers Connect,
+            <br className="hidden md:block" />
+            Collaborate & Code Together.
+          </h1>
+        </div>
+      )}
+
       <Navbar />
       <div className="flex-1 overflow-y-auto">
-        <Outlet /> {/* This will render the routes nested inside the AppLayout */}
+        <Outlet />
       </div>
       <Footer />
     </div>
   );
 };
 
+// Define routes
 const Router = createBrowserRouter([
   {
     path: "/",
-    element: <App />, // Use App component for all the routes that follow
+    element: <AppLayout />,
     children: [
       {
         path: "/",
-        element: <ProtectedRoute />, // Protected route wrapper
+        element: <ProtectedRoute />,
         children: [
-          { path: "/connections", element: <Connections /> },
-          { path: "/myprofile", element: <MyProfile /> },
-          { path: "/updateprofile", element: <UpdateProfile /> },
-          { path: "/receive-requests", element: <ReceiveRequests /> },
-          { path: "/friends", element: <Friends /> },
-          { path: "/friendProfile/:id", element: <FriendProfile /> },
+          { path: "connections", element: <Connections /> },
+          { path: "myprofile", element: <MyProfile /> },
+          { path: "updateprofile", element: <UpdateProfile /> },
+          { path: "receive-requests", element: <ReceiveRequests /> },
+          { path: "friends", element: <Friends /> },
+          { path: "friendProfile/:id", element: <FriendProfile /> },
+          { path: "chat/:id", element: <Chat /> },
         ],
       },
-      { path: "/login", element: <Login /> },
+      { path: "login", element: <Login /> },
     ],
   },
 ]);
 
-function AppRoot() {
+// Root app component
+function App() {
   return (
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <RouterProvider router={Router} />
-      </PersistGate>
+      <RouterProvider router={Router} />
     </Provider>
   );
 }
 
-export default AppRoot;
+export default App;

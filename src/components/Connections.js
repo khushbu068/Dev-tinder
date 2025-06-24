@@ -41,21 +41,21 @@ const Connections = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 overflow-hidden">
-      <h2 className="text-2xl font-semibold mb-6">Feed</h2>
+    <div className="flex flex-col items-center justify-center bg-gray-100 overflow-hidden">
+      <h2 className="text-2xl font-semibold text-black mb-3">Feed</h2>
 
       {currentUser ? (
-  <div className="card w-80 bg-base-100 shadow-xl">
-    <figure className="h-40 overflow-hidden">
+  <div className="card w-80 h-2/3 bg-base-100 shadow-xl">
+    <figure className="h-50 overflow-hidden mt-2">
       <img
-        src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
+        src="https://png.pngtree.com/png-vector/20220702/ourmid/pngtree-add-new-user-avatar-social-png-image_5545303.png"
         alt={`${currentUser.firstName} ${currentUser.lastName}`}
-        className="object-cover w-full h-full"
+        className="object-cover rounded-full w-full h-2/5 mb-0"
       />
     </figure>
 
-    <div className="card-body p-4">
-      <h2 className="card-title text-lg capitalize">
+    <div className="card-body p-4 mb-3">
+      <h2 className="card-title capitalize">
         {currentUser.firstName} {currentUser.lastName}
       </h2>
       <p className="text-sm text-gray-600">
