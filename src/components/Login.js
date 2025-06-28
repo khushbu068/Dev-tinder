@@ -40,7 +40,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/signUp",
+        "http://localhost:8000/api/SignUp",
         userData
       );
       console.log("Signup Response:", response.data);
@@ -82,94 +82,88 @@ const Login = () => {
     isSignup ? signupUser() : loginUser();
   };
 
- return (
-  <motion.div
-    variants={fadeIn}
-    initial={{ opacity: 0, scale: 0.9 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 0.5 }}
-    className="flex justify-center items-center p-7 mt-20"
-  >
+  return (
     <motion.div
-      initial={{ y: -50, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="relative card w-96 shadow-2xl p-6 bg-transparent text-gray-300 backdrop-blur-md bg-navbar border border-navbar-border hover:shadow-xl hover:border-white"
+      variants={fadeIn}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      className="flex justify-center items-center p-7 mt-20"
     >
-      <h2 className="text-xl text-white font-semibold text-center mb-4">
-        {isSignup ? "Sign Up" : "Login"}
-      </h2>
-
-      {isSignup && (
-        <>
-          <motion.input
-            type="text"
-            placeholder="First Name"
-            ref={firstNameRef}
-            className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
-          />
-          <motion.input
-            type="text"
-            placeholder="Last Name"
-            ref={lastNameRef}
-            className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
-          />
-        </>
-      )}
-
-      <motion.input
-        type="email"
-        placeholder="Email"
-        ref={emailRef}
-        className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
-      />
-
-      <div className="relative w-full mb-3">
+      <motion.div
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="relative card w-96 shadow-2xl p-6 bg-transparent text-gray-300 backdrop-blur-md bg-navbar border border-navbar-border hover:shadow-xl hover:border-white"
+      >
+        <h2 className="text-xl text-white font-semibold text-center mb-4">
+          {isSignup ? "Sign Up" : "Login"}
+        </h2>
+        {isSignup && (
+          <>
+            <motion.input
+              type="text"
+              placeholder="First Name"
+              ref={firstNameRef}
+              className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
+            />
+            <motion.input
+              type="text"
+              placeholder="Last Name"
+              ref={lastNameRef}
+              className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
+            />
+          </>
+        )}
         <motion.input
-          type={showPassword ? "text" : "password"}
-          placeholder="Password"
-          ref={passwordRef}
-          className="input input-bordered bg-white text-black w-full pr-10 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
+          type="email"
+          placeholder="Email"
+          ref={emailRef}
+          className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
         />
-        <button
-          type="button"
-          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-white"
-          onClick={() => setShowPassword(!showPassword)}
+        <div className="relative w-full mb-3">
+          <motion.input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            ref={passwordRef}
+            className="input input-bordered bg-white text-black w-full hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
+          />
+          <button
+            type="button"
+            className="absolute right-3 top-3"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+          </button>
+        </div>
+        {errorMessage && (
+          <motion.p
+            className="text-highlight text-sm text-center mb-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {errorMessage}
+          </motion.p>
+        )}
+        <motion.button
+          className="btn btn-primary bg-primary text-white w-full hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
+          onClick={handleSubmit}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-        </button>
-      </div>
-
-      {errorMessage && (
-        <motion.p
-          className="text-highlight text-sm text-center mb-3"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          {isSignup ? "Sign Up" : "Login"}
+        </motion.button>
+        <p
+          className="text-center text-white mt-3 cursor-pointer hover:underline"
+          onClick={toggleSignup}
         >
-          {errorMessage}
-        </motion.p>
-      )}
-
-      <motion.button
-        className="btn btn-primary bg-primary text-white w-full hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
-        onClick={handleSubmit}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        {isSignup ? "Sign Up" : "Login"}
-      </motion.button>
-
-      <p
-        className="text-center text-white mt-3 cursor-pointer hover:underline"
-        onClick={toggleSignup}
-      >
-        {isSignup
-          ? "Already have an account? Login"
-          : "Don't have an account? Sign Up"}
-      </p>
+          {isSignup
+            ? "Already have an account? Login"
+            : "Don't have an account? Sign Up"}
+        </p>
+      </motion.div>
     </motion.div>
-  </motion.div>
-);
+  );
 };
 
 export default Login;

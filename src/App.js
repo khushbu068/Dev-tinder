@@ -1,14 +1,6 @@
 import "./index.css";
-import {
-  createBrowserRouter,
-  Outlet,
-  RouterProvider,
-  useLocation,
-} from "react-router-dom";
-import { Provider, useDispatch } from "react-redux";
-import { useEffect } from "react";
-import axios from "axios";
-
+import { createBrowserRouter, Outlet, RouterProvider, useLocation } from "react-router-dom";
+import { Provider, useSelector } from "react-redux";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import UpdateProfile from "./components/UpdateProfile";
@@ -20,26 +12,15 @@ import Friends from "./components/Friends";
 import ProtectedRoute from "./components/ProtectedRoute";
 import FriendProfile from "./components/FriendProfile";
 import Chat from "./components/Chat";
-
+import MyChat from "./components/MyChat";
 import store from "./redux/store";
-import { setRequests } from "./redux/requestSlice";
-import { setAuthenticated } from "./redux/userSlice"; // ✅ Added import
+import { OnlineUsersProvider } from "./context/OnlineUsersContext";
 
-// App layout component
+// App layout wrapper
 const AppLayout = () => {
-  const dispatch = useDispatch();
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   const showBackgroundImage = isHomePage || location.pathname === "/login";
-
- 
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      dispatch(setAuthenticated(true)); // ✅ Dispatch setAuthenticated from redux
-    }
-  }, [dispatch]);
 
   return (
     <div
@@ -77,8 +58,8 @@ const AppLayout = () => {
   );
 };
 
-// Define routes
-const Router = createBrowserRouter([
+// Define the router
+const router = createBrowserRouter([
   {
     path: "/",
     element: <AppLayout />,
@@ -94,6 +75,7 @@ const Router = createBrowserRouter([
           { path: "friends", element: <Friends /> },
           { path: "friendProfile/:id", element: <FriendProfile /> },
           { path: "chat/:id", element: <Chat /> },
+          { path: "myChat", element: <MyChat /> },
         ],
       },
       { path: "login", element: <Login /> },
@@ -101,11 +83,21 @@ const Router = createBrowserRouter([
   },
 ]);
 
-// Root app component
+// App component with Redux and Context wrapped
+const AppWithProviders = () => {
+  const { currentUser } = useSelector((state) => state.users);
+
+  return (
+    <OnlineUsersProvider currentUser={currentUser}>
+      <RouterProvider router={router} />
+    </OnlineUsersProvider>
+  );
+};
+
 function App() {
   return (
     <Provider store={store}>
-      <RouterProvider router={Router} />
+      <AppWithProviders />
     </Provider>
   );
 }

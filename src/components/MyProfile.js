@@ -28,8 +28,31 @@ const MyProfile = () => {
     fetchUserProfile();
   }, []);
 
-  if (loading) return <div className="text-center mt-5">Loading...</div>;
-  if (!user) return <div className="text-center mt-5">User not found.</div>;
+  if (loading) {
+    return (
+      <motion.div
+        className="flex justify-center items-center h-[60vh]"
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+      >
+        <span className="loading loading-dots loading-lg text-primary"></span>
+      </motion.div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <motion.div
+        className="text-center mt-10 text-gray-400 text-lg"
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+      >
+        User not found.
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

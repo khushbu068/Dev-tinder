@@ -12,6 +12,7 @@ const fadeIn = {
 const ReceiveRequests = () => {
   const dispatch = useDispatch();
   const requests = useSelector((state) => state.requests.receiveRequests);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchRequests();
@@ -20,12 +21,14 @@ const ReceiveRequests = () => {
   const fetchRequests = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8000/api/receiverAllConnectionReq",
+        "http://localhost:8000/api/request/receiverAllConnectionReq",
         { withCredentials: true }
       );
-      dispatch(setRequests(res.data.receiveRequests || []));
+      dispatch(setRequests(res.data.receiveRequest || []));
     } catch (error) {
       console.error("Error fetching requests:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,7 +52,11 @@ const ReceiveRequests = () => {
       animate="visible"
       variants={fadeIn}
     >
-      {requests.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center items-center h-[50vh]">
+          <span className="loading loading-dots loading-lg text-primary"></span>
+        </div>
+      ) : requests.length === 0 ? (
         <p className="text-xl font-semibold text-white">
           No received requests yet.
         </p>
@@ -70,7 +77,11 @@ const ReceiveRequests = () => {
               >
                 <figure>
                   <img
-                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSI_efoBNhpgj44SFexzeYTfsDINdwvsx761A&s"
+                    src={
+                      request.sender?.profileImage?.trim()
+                        ? request.sender.profileImage
+                        : "https://via.placeholder.com/150"
+                    }
                     alt="User"
                     className="rounded-t-xl w-full h-48 object-cover"
                   />
