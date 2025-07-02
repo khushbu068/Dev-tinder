@@ -36,7 +36,7 @@ const Navbar = () => {
       });
       setUnseenCount(data.count || 0);
     } catch (err) {
-      console.error("❌ [Navbar] Unseen message fetch failed:", err.message);
+      console.error(" [Navbar] Unseen message fetch failed:", err.message);
     }
   };
 
@@ -62,7 +62,7 @@ const Navbar = () => {
       variants={fadeIn}
       className="bg-[#205781] text-white shadow-md py-3 px-6 flex items-center justify-between relative"
     >
-      {/* Left Section - Menu */}
+     =
       <div className="relative">
         <button onClick={() => setMenuOpen(!menuOpen)} className="btn btn-ghost">
           <FontAwesomeIcon icon={faBars} className="h-6 w-6 text-white" />
@@ -103,10 +103,9 @@ const Navbar = () => {
         )}
       </div>
 
-      {/* Center - Title */}
+     
       <h1 className="text-xl font-semibold tracking-wide">My App</h1>
 
-      {/* Right Section - Icons */}
       <div className="flex items-center gap-4">
         <button className="hover:bg-[#4F959D] p-2 rounded-md transition">
           <FontAwesomeIcon icon={faSearch} className="h-5 w-5 text-white" />
@@ -119,7 +118,6 @@ const Navbar = () => {
           <FontAwesomeIcon icon={faUser} className="h-5 w-5 text-white" />
         </button>
 
-        {/* Notification Bell with Count */}
         <Link to="/receive-requests" className="relative">
           <FontAwesomeIcon
             icon={faBell}
@@ -139,7 +137,7 @@ const Navbar = () => {
           />
         </Link>
 
-        {/* Chat Notification Icon */}
+      
         <Link to="/myChat" className="relative">
           <FontAwesomeIcon
             icon={faComments}

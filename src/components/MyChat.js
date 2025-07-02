@@ -14,7 +14,7 @@ const MyChat = () => {
 
   const fetchChats = async () => {
     try {
-      console.log("📥 [MyChat] Fetching user chats...");
+      console.log(" [MyChat] Fetching user chats...");
       setLoading(true);
       const { data } = await axios.get("http://localhost:8000/api/fetchChat", {
         withCredentials: true,
@@ -22,10 +22,10 @@ const MyChat = () => {
           Authorization: `Bearer ${authToken}`,
         },
       });
-      console.log("✅ [MyChat] Chats fetched:", data);
+      console.log(" [MyChat] Chats fetched:", data);
       setChats(data);
     } catch (err) {
-      console.error("❌ [MyChat] Failed to fetch chats:", err.response?.data || err.message);
+      console.error(" [MyChat] Failed to fetch chats:", err.response?.data || err.message);
     } finally {
       setLoading(false);
     }

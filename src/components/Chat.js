@@ -49,7 +49,7 @@ const Chat = () => {
       const otherUser = data.users.find((u) => u._id !== currentUser._id);
       setReceiverId(otherUser?._id);
     } catch (err) {
-      console.error("❌ [accessChat] Error:", err.response?.data || err.message);
+      console.error("[accessChat] Error:", err.response?.data || err.message);
     }
   };
 
@@ -65,7 +65,7 @@ const Chat = () => {
       );
       setMessages(data);
     } catch (err) {
-      console.error("❌ [fetchMessages] Error:", err.response?.data || err.message);
+      console.error(" [fetchMessages] Error:", err.response?.data || err.message);
     } finally {
       setLoading(false);
     }
@@ -94,7 +94,7 @@ const Chat = () => {
       setShowEmojiPicker(false);
       socket.emit("new message", data);
     } catch (err) {
-      console.error("❌ [sendMessage] Error:", err.response?.data || err.message);
+      console.error(" [sendMessage] Error:", err.response?.data || err.message);
     }
   };
 
@@ -122,7 +122,7 @@ const Chat = () => {
     if (!currentUser) return;
     socket.emit("setup", currentUser);
     socket.on("connected", () => {
-      console.log("✅ Socket connected");
+      console.log(" Socket connected");
     });
     return () => socket.off("connected");
   }, [currentUser]);

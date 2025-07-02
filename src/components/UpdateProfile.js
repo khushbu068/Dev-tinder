@@ -153,13 +153,13 @@ const UpdateProfile = () => {
             className="file-input file-input-bordered w-full max-w-xs"
           />
 
-          <button
+          <motion.button
             type="submit"
             disabled={picLoading}
             className="btn btn-primary w-full"
           >
             {picLoading ? "Uploading..." : "Save Changes"}
-          </button>
+          </motion.button>
         </form>
       </div>
     </motion.div>

@@ -15,10 +15,13 @@ import Chat from "./components/Chat";
 import MyChat from "./components/MyChat";
 import store from "./redux/store";
 import { OnlineUsersProvider } from "./context/OnlineUsersContext";
+import Home from "./components/Home";
+import About from "./components/About";
 
 // App layout wrapper
 const AppLayout = () => {
   const location = useLocation();
+  const { currentUser } = useSelector((state) => state.users);
   const isHomePage = location.pathname === "/";
   const showBackgroundImage = isHomePage || location.pathname === "/login";
 
@@ -39,17 +42,7 @@ const AppLayout = () => {
         color: "#fff",
       }}
     >
-      {isHomePage && (
-        <div className="absolute top-1/3 w-full text-center z-10 px-4">
-          <h1 className="text-white text-4xl md:text-6xl font-extrabold drop-shadow-lg tracking-tight font-[Poppins]">
-            Where Developers Connect,
-            <br className="hidden md:block" />
-            Collaborate & Code Together.
-          </h1>
-        </div>
-      )}
-
-      <Navbar />
+      {currentUser && <Navbar />}
       <div className="flex-1 overflow-y-auto">
         <Outlet />
       </div>
@@ -58,14 +51,27 @@ const AppLayout = () => {
   );
 };
 
+
+
 // Define the router
 const router = createBrowserRouter([
   {
     path: "/",
     element: <AppLayout />,
     children: [
-      {
-        path: "/",
+        {
+          path: "/",
+          element: <Home />
+        },
+        {
+          path: "/login",
+          element: <Login />
+        },
+        { 
+          path: "/about", 
+          element: <About />
+        },
+        {
         element: <ProtectedRoute />,
         children: [
           { path: "connections", element: <Connections /> },
@@ -76,9 +82,11 @@ const router = createBrowserRouter([
           { path: "friendProfile/:id", element: <FriendProfile /> },
           { path: "chat/:id", element: <Chat /> },
           { path: "myChat", element: <MyChat /> },
+         
+
         ],
       },
-      { path: "login", element: <Login /> },
+      
     ],
   },
 ]);
