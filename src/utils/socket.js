@@ -1,4 +1,7 @@
 import { io } from "socket.io-client";
 
-export const socket = io("http://localhost:8000",
-    { withCredentials: true });
+const API_URL = process.env.REACT_APP_API_URL;
+
+export const socket = io(API_URL, {
+  withCredentials: true,
+});

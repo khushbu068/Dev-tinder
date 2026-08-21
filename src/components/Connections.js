@@ -2,19 +2,26 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUsers } from "../redux/userSlice";
 import { setRequests } from "../redux/requestSlice";
-import axios from "axios";
+import api from "../utils/api";
 import { motion } from "framer-motion";
 
 const fadeIn = {
   hidden: { opacity: 0, y: -10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5 },
+  },
 };
 
 const Connections = () => {
   const dispatch = useDispatch();
+
   const { users } = useSelector((state) => state.users);
+
   const [loading, setLoading] = useState(true);
   const [visitedAllUsers, setVisitedAllUsers] = useState(false);
+
   const loggedInId = localStorage.getItem("userId");
 
   const currentUser = users.length > 0 ? users[0] : null;
@@ -22,9 +29,7 @@ const Connections = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/feed", {
-          withCredentials: true,
-        });
+        const response = await api.get("/feed");
 
         const filteredUsers = response.data.feedUsers.filter(
           (user) => user._id !== loggedInId
@@ -44,9 +49,8 @@ const Connections = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:8000/api/request/receiverAllConnectionReq",
-          { withCredentials: true }
+        const response = await api.get(
+          "/request/receiverAllConnectionReq"
         );
 
         if (Array.isArray(response.data.receiveRequest)) {
@@ -64,20 +68,23 @@ const Connections = () => {
     if (!currentUser) {
       setVisitedAllUsers(true);
     }
-  }, [users, currentUser]);
+  }, [currentUser]);
 
   const handleAction = async (actionType) => {
     if (!currentUser) return;
 
     try {
-      await axios.post(
-        `http://localhost:8000/api/request/send/${actionType}/${currentUser._id}`,
-        {},
-        { withCredentials: true }
+      await api.post(
+        `/request/send/${actionType}/${currentUser._id}`,
+        {}
       );
+
       dispatch(setUsers(users.slice(1)));
     } catch (error) {
-      console.error(`Failed to ${actionType} user:`, error.response?.data || error);
+      console.error(
+        `Failed to ${actionType} user:`,
+        error.response?.data || error
+      );
     }
   };
 
@@ -89,8 +96,10 @@ const Connections = () => {
         animate="visible"
         variants={fadeIn}
       >
-        <span className="loading loading-dots loading-md text-primary"></span>
-        <span className="text-white text-sm mt-2">Loading your social feed...</span>
+        <span className="loading loading-dots loading-md text-primary" />
+        <span className="text-white text-sm mt-2">
+          Loading your social feed...
+        </span>
       </motion.div>
     );
   }
@@ -103,7 +112,9 @@ const Connections = () => {
         animate="visible"
         variants={fadeIn}
       >
-        <div className="text-gray-300">No users left to show.</div>
+        <div className="text-gray-300">
+          No users left to show.
+        </div>
       </motion.div>
     );
   }
@@ -130,17 +141,21 @@ const Connections = () => {
                 className="rounded-t-xl"
               />
             </figure>
+
             <div className="card-body p-4">
               <h2 className="card-title">
                 {currentUser.firstName} {currentUser.lastName}
               </h2>
+
               <p>{currentUser.email}</p>
+
               <div>
                 <strong>Skills:</strong>{" "}
                 {currentUser.skills?.length > 0
                   ? currentUser.skills.join(", ")
                   : "No skills added"}
               </div>
+
               <div className="card-actions justify-between mt-4">
                 <button
                   onClick={() => handleAction("ignored")}
@@ -148,6 +163,7 @@ const Connections = () => {
                 >
                   Ignore
                 </button>
+
                 <button
                   onClick={() => handleAction("interested")}
                   className="btn bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition duration-200"

@@ -1,30 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import axios from "axios";
+import api from "../utils/api";
 
 const fadeIn = {
   hidden: { opacity: 0, y: -10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5 },
+  },
 };
 
 const MyProfile = () => {
   const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/userProfile", {
-          withCredentials: true,
-        });
+        const response = await api.get("/userProfile");
+
         setUser(response.data.user);
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        console.error(
+          "Error fetching profile:",
+          error
+        );
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
+
     fetchUserProfile();
   }, []);
 
@@ -36,7 +45,7 @@ const MyProfile = () => {
         animate="visible"
         variants={fadeIn}
       >
-        <span className="loading loading-dots loading-lg text-primary"></span>
+        <span className="loading loading-dots loading-lg text-primary" />
       </motion.div>
     );
   }
@@ -62,7 +71,9 @@ const MyProfile = () => {
       variants={fadeIn}
     >
       <div className="card bg-secondary shadow-xl p-6 w-90 text-white">
-        <h2 className="text-xl font-semibold text-center mb-4">My Profile</h2>
+        <h2 className="text-xl font-semibold text-center mb-4">
+          My Profile
+        </h2>
 
         <div className="mb-3 flex justify-center items-center">
           {user.profileImage ? (
@@ -72,26 +83,37 @@ const MyProfile = () => {
               className="w-20 h-20 rounded-full object-cover border border-white"
             />
           ) : (
-            <span className="text-gray-400">No image</span>
+            <span className="text-gray-400">
+              No image
+            </span>
           )}
         </div>
 
         <div className="mb-3">
-          <strong>First Name:</strong> {user.firstName || "N/A"}
+          <strong>First Name:</strong>{" "}
+          {user.firstName || "N/A"}
         </div>
+
         <div className="mb-3">
-          <strong>Last Name:</strong> {user.lastName || "N/A"}
+          <strong>Last Name:</strong>{" "}
+          {user.lastName || "N/A"}
         </div>
+
         <div className="mb-3">
-          <strong>Email:</strong> {user.email || "N/A"}
+          <strong>Email:</strong>{" "}
+          {user.email || "N/A"}
         </div>
+
         <div className="mb-3">
-          <strong>About:</strong> {user.about || "No bio added"}
+          <strong>About:</strong>{" "}
+          {user.about || "No bio added"}
         </div>
 
         <button
           className="btn btn-primary w-full mt-4"
-          onClick={() => navigate("/updateprofile")}
+          onClick={() =>
+            navigate("/updateprofile")
+          }
         >
           Update Profile
         </button>
