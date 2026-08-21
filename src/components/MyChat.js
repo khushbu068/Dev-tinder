@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
@@ -19,36 +19,36 @@ const MyChat = () => {
 
   const { onlineUsers } = useOnlineUsers();
 
-  const fetchChats = async () => {
-    try {
-      console.log("[MyChat] Fetching user chats...");
+const fetchChats = useCallback(async () => {
+  try {
+    console.log("[MyChat] Fetching user chats...");
 
-      setLoading(true);
+    setLoading(true);
 
-      const { data } = await api.get("/fetchChat", {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
+    const { data } = await api.get("/fetchChat", {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
 
-      console.log("[MyChat] Chats fetched:", data);
+    console.log("[MyChat] Chats fetched:", data);
 
-      setChats(data);
-    } catch (err) {
-      console.error(
-        "[MyChat] Failed to fetch chats:",
-        err.response?.data || err.message
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    setChats(data);
+  } catch (err) {
+    console.error(
+      "[MyChat] Failed to fetch chats:",
+      err.response?.data || err.message
+    );
+  } finally {
+    setLoading(false);
+  }
+}, [authToken]);
 
-  useEffect(() => {
-    if (authToken && currentUser) {
-      fetchChats();
-    }
-  }, [authToken, currentUser]);
+useEffect(() => {
+  if (authToken && currentUser) {
+    fetchChats();
+  }
+}, [authToken, currentUser, fetchChats]);
 
   return (
     <div className="p-4 min-h-[60vh]">

@@ -1,4 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUsers } from "../redux/userSlice";
 import { setRequests } from "../redux/requestSlice";
@@ -46,23 +50,30 @@ const Connections = () => {
     fetchUsers();
   }, [dispatch, loggedInId]);
 
-  useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const response = await api.get(
-          "/request/receiverAllConnectionReq"
-        );
+const fetchRequests = useCallback(async () => {
+  try {
+    const res = await api.get(
+      "/request/receiverAllConnectionReq"
+    );
 
-        if (Array.isArray(response.data.receiveRequest)) {
-          dispatch(setRequests(response.data.receiveRequest));
-        }
-      } catch (error) {
-        console.error("Error fetching requests:", error);
-      }
-    };
+    dispatch(
+      setRequests(
+        res.data.receiveRequest || []
+      )
+    );
+  } catch (error) {
+    console.error(
+      "Error fetching requests:",
+      error
+    );
+  } finally {
+    setLoading(false);
+  }
+}, [dispatch]);
 
-    fetchRequests();
-  }, [dispatch]);
+useEffect(() => {
+  fetchRequests();
+}, [fetchRequests]);
 
   useEffect(() => {
     if (!currentUser) {

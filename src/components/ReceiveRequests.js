@@ -1,4 +1,5 @@
 import React, {
+  useCallback,
   useEffect,
   useState,
 } from "react";
@@ -36,30 +37,30 @@ const ReceiveRequests = () => {
 
   const [loading, setLoading] = useState(true);
 
-  const fetchRequests = async () => {
-    try {
-      const res = await api.get(
-        "/request/receiverAllConnectionReq"
-      );
+const fetchRequests = useCallback(async () => {
+  try {
+    const res = await api.get(
+      "/request/receiverAllConnectionReq"
+    );
 
-      dispatch(
-        setRequests(
-          res.data.receiveRequest || []
-        )
-      );
-    } catch (error) {
-      console.error(
-        "Error fetching requests:",
-        error
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    dispatch(
+      setRequests(
+        res.data.receiveRequest || []
+      )
+    );
+  } catch (error) {
+    console.error(
+      "Error fetching requests:",
+      error
+    );
+  } finally {
+    setLoading(false);
+  }
+}, [dispatch]);
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
+useEffect(() => {
+  fetchRequests();
+}, [fetchRequests]);
 
   const handleRequestUpdate = async (
     requestId,

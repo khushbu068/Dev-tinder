@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
@@ -40,43 +40,43 @@ const Navbar = () => {
   const authToken =
     token || localStorage.getItem("token");
 
-  const fetchUnseenCount = async () => {
-    try {
-      const { data } = await api.get(
-        "/message/unseen-count",
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        }
-      );
+const fetchUnseenCount = useCallback(async () => {
+  try {
+    const { data } = await api.get(
+      "/message/unseen-count",
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    );
 
-      setUnseenCount(data.count || 0);
-    } catch (err) {
-      console.error(
-        "[Navbar] Unseen message fetch failed:",
-        err.message
-      );
-    }
-  };
+    setUnseenCount(data.count || 0);
+  } catch (err) {
+    console.error(
+      "[Navbar] Unseen message fetch failed:",
+      err.message
+    );
+  }
+}, [authToken]);
 
-  useEffect(() => {
-    if (!authToken) return;
+useEffect(() => {
+  if (!authToken) return;
 
-    fetchUnseenCount();
+  fetchUnseenCount();
 
-    socket.on(
+  socket.on(
+    "new message",
+    fetchUnseenCount
+  );
+
+  return () => {
+    socket.off(
       "new message",
       fetchUnseenCount
     );
-
-    return () => {
-      socket.off(
-        "new message",
-        fetchUnseenCount
-      );
-    };
-  }, [authToken]);
+  };
+}, [authToken, fetchUnseenCount]);
 
   const handleLogout = async () => {
     try {
