@@ -22,8 +22,15 @@ import About from "./components/About";
 const AppLayout = () => {
   const location = useLocation();
   const { currentUser } = useSelector((state) => state.users);
+
   const isHomePage = location.pathname === "/";
-  const showBackgroundImage = isHomePage || location.pathname === "/login";
+  const isPublicPage =
+    location.pathname === "/" ||
+    location.pathname === "/login" ||
+    location.pathname === "/about";
+
+  const showBackgroundImage =
+    isHomePage || location.pathname === "/login";
 
   return (
     <div
@@ -42,10 +49,12 @@ const AppLayout = () => {
         color: "#fff",
       }}
     >
-      {currentUser && <Navbar />}
+      {!isPublicPage && currentUser && <Navbar />}
+
       <div className="flex-1 overflow-y-auto">
         <Outlet />
       </div>
+
       <Footer />
     </div>
   );

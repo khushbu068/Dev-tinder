@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
@@ -29,54 +29,113 @@ const Navbar = () => {
 
   const navigate = useNavigate();
 
+  // Reference for hamburger menu area
+  const menuRef = useRef(null);
+
   const receiveRequests = useSelector(
     (state) => state.requests.receiveRequests
   );
 
-  const { token } = useSelector(
-    (state) => state.users
-  );
+  const { token } = useSelector((state) => state.users);
 
-  const authToken =
-    token || localStorage.getItem("token");
+  const authToken = token || localStorage.getItem("token");
 
-const fetchUnseenCount = useCallback(async () => {
-  try {
-    const { data } = await api.get(
-      "/message/unseen-count",
-      {
+  // ===============================
+  // Fetch unseen messages
+  // ===============================
+
+  const fetchUnseenCount = useCallback(async () => {
+    if (!authToken) return;
+
+    try {
+      const { data } = await api.get("/message/unseen-count", {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
+      });
+
+      setUnseenCount(data.count || 0);
+    } catch (err) {
+      console.error(
+        "[Navbar] Unseen message fetch failed:",
+        err.message
+      );
+    }
+  }, [authToken]);
+
+  // ===============================
+  // Socket listener
+  // ===============================
+
+  useEffect(() => {
+    if (!authToken) return;
+
+    fetchUnseenCount();
+
+    socket.on("new message", fetchUnseenCount);
+
+    return () => {
+      socket.off("new message", fetchUnseenCount);
+    };
+  }, [authToken, fetchUnseenCount]);
+
+  // ===============================
+  // Close menu when clicking outside
+  // ===============================
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target)
+      ) {
+        setMenuOpen(false);
       }
-    );
+    };
 
-    setUnseenCount(data.count || 0);
-  } catch (err) {
-    console.error(
-      "[Navbar] Unseen message fetch failed:",
-      err.message
-    );
-  }
-}, [authToken]);
+    document.addEventListener("mousedown", handleClickOutside);
 
-useEffect(() => {
-  if (!authToken) return;
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
+  }, []);
 
-  fetchUnseenCount();
+  // ===============================
+  // Close menu with Escape
+  // ===============================
 
-  socket.on(
-    "new message",
-    fetchUnseenCount
-  );
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
 
-  return () => {
-    socket.off(
-      "new message",
-      fetchUnseenCount
-    );
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+    };
+  }, []);
+
+  // ===============================
+  // Navigation helper
+  // ===============================
+
+  const handleNavigation = (path) => {
+    setMenuOpen(false);
+    navigate(path);
   };
-}, [authToken, fetchUnseenCount]);
+
+  // ===============================
+  // Logout
+  // ===============================
 
   const handleLogout = async () => {
     try {
@@ -84,6 +143,8 @@ useEffect(() => {
 
       localStorage.removeItem("token");
       localStorage.removeItem("userId");
+
+      setMenuOpen(false);
 
       navigate("/login");
     } catch (err) {
@@ -96,98 +157,140 @@ useEffect(() => {
       initial="hidden"
       animate="visible"
       variants={fadeIn}
-      className="bg-[#205781] text-white shadow-md py-3 px-6 flex items-center justify-between relative"
+      className="bg-[#205781] text-white shadow-md py-1 px-4 sm:px-6 flex items-center justify-between relative"
     >
-      <div className="relative">
+      {/* ===============================
+          LEFT - Hamburger
+      =============================== */}
+
+      <div
+        ref={menuRef}
+        className="relative"
+      >
         <button
-          onClick={() =>
-            setMenuOpen(!menuOpen)
-          }
-          className="btn btn-ghost"
+          type="button"
+          onClick={() => setMenuOpen((prev) => !prev)}
+          aria-label="Open menu"
+          aria-expanded={menuOpen}
+          className="p-2 rounded-md hover:bg-[#4F959D] transition-colors duration-200"
         >
           <FontAwesomeIcon
             icon={faBars}
-            className="h-6 w-6 text-white"
+            className="h-4 w-4"
           />
         </button>
 
+        {/* ===============================
+            Dropdown Menu
+        =============================== */}
+
         {menuOpen && (
-          <ul className="absolute left-0 mt-2 w-48 bg-[#4F959D] text-white shadow-lg rounded-md overflow-hidden transition-transform duration-200 z-10">
-            <li
-              className="hover:bg-[#98D2C0] px-4 py-2 cursor-pointer"
-              onClick={() => {
-                navigate("/login");
-                setMenuOpen(false);
-              }}
-            >
-              Home
+          <motion.ul
+            initial={{ opacity: 0, y: -5, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -5, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 top-full mt-2 w-28 bg-[#4F959D] text-white shadow-xl rounded-lg overflow-hidden z-50 border border-white/10"
+          >
+            <li>
+              <button
+                type="button"
+                onClick={() => handleNavigation("/login")}
+                className="w-full text-left text-xs px-2  py-1.5 hover:bg-[#98D2C0] hover:text-gray-900 transition-colors duration-200"
+              >
+                Home
+              </button>
             </li>
 
-            <li
-              className="hover:bg-[#98D2C0] px-4 py-2 cursor-pointer"
-              onClick={() => {
-                navigate("/myprofile");
-                setMenuOpen(false);
-              }}
-            >
-              My Profile
+            <li>
+              <button
+                type="button"
+                onClick={() =>
+                  handleNavigation("/myprofile")
+                }
+                className="w-full text-left text-xs px-2  py-1.5 hover:bg-[#98D2C0] hover:text-gray-900 transition-colors duration-200"
+              >
+                My Profile
+              </button>
             </li>
 
-            <li
-              className="hover:bg-[#98D2C0] px-4 py-2 cursor-pointer"
-              onClick={() => {
-                navigate("/friends");
-                setMenuOpen(false);
-              }}
-            >
-              Friends
+            <li>
+              <button
+                type="button"
+                onClick={() =>
+                  handleNavigation("/friends")
+                }
+                className="w-full text-left text-xs px-2  py-1.5 hover:bg-[#98D2C0] hover:text-gray-900 transition-colors duration-200"
+              >
+                Friends
+              </button>
             </li>
 
-            <li
-              className="hover:bg-red-500 px-4 py-2 cursor-pointer"
-              onClick={handleLogout}
-            >
-              Logout
+            <li>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full text-left text-xs px-2 text-red-500 py-1.5 hover:bg-red-100 transition-colors duration-200"
+              >
+                Logout
+              </button>
             </li>
-          </ul>
+          </motion.ul>
         )}
       </div>
 
-      <h1 className="text-xl font-semibold tracking-wide">
-        My App
-      </h1>
+      {/* ===============================
+          CENTER - App Name
+      =============================== */}
 
-      <div className="flex items-center gap-4">
-        <button className="hover:bg-[#4F959D] p-2 rounded-md transition">
+      {/* <h1 className="text-lg sm:text-xl font-semibold tracking-wide">
+        My App
+      </h1> */}
+
+      {/* ===============================
+          RIGHT - Navigation Icons
+      =============================== */}
+
+      <div className="flex items-center gap-1 sm:gap-1.5">
+
+        {/* Search */}
+        <button
+          type="button"
+          aria-label="Search"
+          className="p-2 rounded-md hover:bg-[#4F959D] transition-colors duration-200"
+        >
           <FontAwesomeIcon
             icon={faSearch}
-            className="h-5 w-5 text-white"
+            className="h-4 w-4"
           />
         </button>
 
+        {/* Profile */}
         <button
-          className="hover:bg-[#4F959D] p-2 rounded-md transition"
-          onClick={() =>
-            navigate("/myprofile")
-          }
+          type="button"
+          aria-label="Profile"
+          onClick={() => navigate("/myprofile")}
+          className="p-2 rounded-md hover:bg-[#4F959D] transition-colors duration-200"
         >
           <FontAwesomeIcon
             icon={faUser}
-            className="h-5 w-5 text-white"
+            className="h-4 w-4"
           />
         </button>
 
+        {/* Notifications */}
         <Link
           to="/receive-requests"
-          className="relative"
+          aria-label="Connection requests"
+          className="relative p-2 rounded-md hover:bg-[#4F959D] transition-colors duration-200"
         >
           <FontAwesomeIcon
             icon={faBell}
-            className="h-6 w-6 text-white hover:text-gray-300 transition"
+            className="h-4 w-4"
           />
 
           {receiveRequests?.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full px-1">
               {receiveRequests.length > 9
                 ? "9+"
                 : receiveRequests.length}
@@ -195,27 +298,31 @@ useEffect(() => {
           )}
         </Link>
 
+        {/* Connections */}
         <Link
           to="/connections"
-          className="relative"
+          aria-label="Connections"
+          className="relative p-2 rounded-md hover:bg-[#4F959D] transition-colors duration-200"
         >
           <FontAwesomeIcon
             icon={faUserGroup}
-            className="h-6 w-6 text-white hover:text-gray-300 transition"
+            className="h-4 w-4"
           />
         </Link>
 
+        {/* Chat */}
         <Link
           to="/myChat"
-          className="relative"
+          aria-label="Messages"
+          className="relative p-2 rounded-md hover:bg-[#4F959D] transition-colors duration-200"
         >
           <FontAwesomeIcon
             icon={faComments}
-            className="h-6 w-6 text-white hover:text-gray-300 transition"
+            className="h-4 w-4"
           />
 
           {unseenCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full animate-pulse">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full px-1 animate-pulse">
               {unseenCount > 9
                 ? "9+"
                 : unseenCount}

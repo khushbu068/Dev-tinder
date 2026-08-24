@@ -3,6 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEye,
   faEyeSlash,
+  faCode,
+  faArrowRight,
+  faArrowLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -48,10 +51,7 @@ const Login = () => {
     };
 
     try {
-      const response = await api.post(
-        "/SignUp",
-        userData
-      );
+      const response = await api.post("/SignUp", userData);
 
       console.log("Signup Response:", response.data);
 
@@ -93,9 +93,7 @@ const Login = () => {
         })
       );
 
-      dispatch(
-        setUsers([response.data.user])
-      );
+      dispatch(setUsers([response.data.user]));
 
       alert("Login successful");
 
@@ -112,79 +110,111 @@ const Login = () => {
   };
 
   return (
+
+      <div className=" h-full">
+
+  {/* Back Button - Outside Card */}
+  <button
+    type="button"
+    onClick={() => navigate("/")}
+    className="pt-4 px-4 pb-4 flex items-center gap-1.5 text-[13px] font-semibold text-gray-200 hover:text-white transition"
+  >
+    <FontAwesomeIcon
+      icon={faArrowLeft}
+      className="text-[12px] font-semibold"
+    />
+    Back
+  </button>
     <motion.div
       variants={fadeIn}
-      initial={{
-        opacity: 0,
-        scale: 0.9,
-      }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-      }}
-      transition={{ duration: 0.5 }}
-      className="flex justify-center items-center p-7 mt-20"
+      initial="hidden"
+      animate="visible"
+      className="relative  flex justify-center items-center px-4 py-2 "
     >
-      <motion.div
-        initial={{
-          y: -50,
-          opacity: 0,
-        }}
-        animate={{
-          y: 0,
-          opacity: 1,
-        }}
-        transition={{
-          duration: 0.5,
-          delay: 0.2,
-        }}
-        className="relative card w-96 shadow-2xl p-6 bg-transparent text-gray-300 backdrop-blur-md bg-navbar border border-navbar-border hover:shadow-xl hover:border-white"
-      >
-        <h2 className="text-xl text-white font-semibold text-center mb-4">
-          {isSignup ? "Sign Up" : "Login"}
-        </h2>
+      {/* Login Card */}
+  <motion.div
+    initial={{
+      y: -30,
+      opacity: 0,
+      scale: 0.95,
+    }}
+    animate={{
+      y: 0,
+      opacity: 1,
+      scale: 1,
+    }}
+    transition={{
+      duration: 0.5,
+      delay: 0.1,
+    }}
+    className="relative w-[340px] sm:w-[360px] rounded-2xl border border-white/50 bg-[#07111f]/60 backdrop-blur-xl shadow-2xl px-6 py-6"
+  >
 
+
+        {/* Top Icon */}
+        <div className="flex justify-center mb-4 mt-2">
+          <div className="w-11 h-11 rounded-xl bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center">
+            <FontAwesomeIcon
+              icon={faCode}
+              className="text-yellow-400 text-lg"
+            />
+          </div>
+        </div>
+
+        {/* Heading */}
+        <div className="text-center mb-5">
+          <h2 className="text-xl font-semibold text-white">
+            {isSignup
+              ? "Create your account"
+              : "Welcome back"}
+          </h2>
+
+          <p className="text-[11px] text-gray-400 mt-1">
+            {isSignup
+              ? "Join the developer community"
+              : "Login to continue to Dev-Tinder"}
+          </p>
+        </div>
+
+        {/* Signup Fields */}
         {isSignup && (
-          <>
+          <div className="grid grid-cols-2 gap-2 mb-2">
             <motion.input
               type="text"
               placeholder="First Name"
               ref={firstNameRef}
-              className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
+              className="w-full h-9 px-3 rounded-lg border border-white/15 bg-white/10 text-white text-xs placeholder:text-gray-300 placeholder:opacity-100 outline-none focus:border-cyan-400/60 focus:bg-white/[0.14] transition"
             />
 
             <motion.input
               type="text"
               placeholder="Last Name"
               ref={lastNameRef}
-              className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
+              className="w-full h-9 px-3 rounded-lg border border-white/15 bg-white/10 text-white text-xs placeholder:text-gray-300 placeholder:opacity-100 outline-none focus:border-cyan-400/60 focus:bg-white/[0.14] transition"
             />
-          </>
+          </div>
         )}
 
+        {/* Email */}
         <motion.input
           type="email"
-          placeholder="Email"
+          placeholder="Email address"
           ref={emailRef}
-          className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
+          className="w-full h-9 px-3 rounded-lg border border-white/15 bg-white/10 text-white text-xs placeholder:text-gray-300 placeholder:opacity-100 outline-none focus:border-cyan-400/60 focus:bg-white/[0.14] transition mb-2"
         />
 
+        {/* Password */}
         <div className="relative w-full mb-3">
-
           <motion.input
-            type={
-              showPassword
-                ? "text"
-                : "password"
-            }
+            type={showPassword ? "text" : "password"}
             placeholder="Password"
             ref={passwordRef}
-            className="input input-bordered bg-white text-black w-full hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
+            className="w-full h-9 px-3 pr-9 rounded-lg border border-white/15 bg-white/10 text-white text-xs placeholder:text-gray-300 placeholder:opacity-100 outline-none focus:border-cyan-400/60 focus:bg-white/[0.14] transition"
           />
 
           <button
             type="button"
-            className="absolute right-3 top-3"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white transition"
             onClick={() =>
               setShowPassword(!showPassword)
             }
@@ -195,41 +225,68 @@ const Login = () => {
                   ? faEyeSlash
                   : faEye
               }
+              className="text-xs"
             />
           </button>
-
         </div>
 
+        {/* Error */}
         {errorMessage && (
           <motion.p
-            className="text-highlight text-sm text-center mb-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            className="text-red-400 text-[11px] text-center mb-3"
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
           >
             {errorMessage}
           </motion.p>
         )}
 
+        {/* Submit */}
         <motion.button
-          className="btn btn-primary bg-primary text-white w-full hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
+          type="button"
+          className="w-full h-9 rounded-lg bg-yellow-400 text-black text-xs font-semibold hover:bg-yellow-300 transition flex items-center justify-center gap-2 shadow-lg"
           onClick={handleSubmit}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
         >
-          {isSignup ? "Sign Up" : "Login"}
+          {isSignup ? "Create Account" : "Login"}
+
+          <FontAwesomeIcon
+            icon={faArrowRight}
+            className="text-[10px]"
+          />
         </motion.button>
 
-        <p
-          className="text-center text-white mt-3 cursor-pointer hover:underline"
-          onClick={toggleSignup}
-        >
-          {isSignup
-            ? "Already have an account? Login"
-            : "Don't have an account? Sign Up"}
-        </p>
+        {/* Toggle */}
+        <div className="text-center mt-4">
+          <p
+            className="text-[11px] text-gray-300 cursor-pointer hover:text-cyan-300 transition"
+            onClick={toggleSignup}
+          >
+            {isSignup
+              ? "Already have an account? "
+              : "Don't have an account? "}
 
+            <span className="text-cyan-300 font-medium">
+              {isSignup ? "Login" : "Sign Up"}
+            </span>
+          </p>
+        </div>
+
+        {/* Bottom Accent */}
+        <div className="mt-5 flex items-center justify-center gap-2">
+          <div className="h-px w-10 bg-white/10" />
+
+          <span className="text-[9px] text-gray-500">
+            DEV-TINDER
+          </span>
+
+          <div className="h-px w-10 bg-white/10" />
+        </div>
       </motion.div>
     </motion.div>
+      </div>
+
   );
 };
 
