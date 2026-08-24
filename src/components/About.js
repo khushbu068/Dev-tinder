@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import {
   faCode,
-  faUsers,
   faComments,
   faRocket,
   faHeart,
