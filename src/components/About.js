@@ -76,19 +76,16 @@ const About = () => {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#07111f] text-white">
 
-      {/* Background Glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl" />
         <div className="absolute top-1/3 -right-32 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Hero Section */}
       <section className="relative max-w-6xl mx-auto px-6 pt-20 pb-24">
 
         <div className="grid lg:grid-cols-2 gap-14 items-center">
 
-          {/* Left */}
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
@@ -129,7 +126,6 @@ const About = () => {
             </div>
           </motion.div>
 
-          {/* Right Developer Card */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -140,7 +136,6 @@ const About = () => {
 
             <div className="relative rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-2xl">
 
-              {/* Fake Code Window */}
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-3 h-3 rounded-full bg-red-400" />
                 <div className="w-3 h-3 rounded-full bg-yellow-400" />
@@ -149,7 +144,6 @@ const About = () => {
 
               <div className="font-mono text-sm space-y-3">
                 <p className="text-gray-500">
-                  // Find your next collaborator
                 </p>
 
                 <p>
@@ -201,7 +195,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* Mission */}
       <section className="relative max-w-6xl mx-auto px-6 py-20">
 
         <motion.div
@@ -226,7 +219,6 @@ const About = () => {
           </p>
         </motion.div>
 
-        {/* Feature Cards */}
         <div className="grid md:grid-cols-3 gap-6 mt-14">
           {features.map((feature, index) => (
             <motion.div
@@ -257,7 +249,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* How It Works */}
       <section className="relative bg-white/[0.03] border-y border-white/5 py-24">
 
         <div className="max-w-6xl mx-auto px-6">
@@ -306,7 +297,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* Tech Stack */}
       <section className="relative max-w-5xl mx-auto px-6 py-24">
 
         <div className="text-center">
@@ -333,7 +323,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* Creator */}
       <section className="max-w-5xl mx-auto px-6 pb-24">
 
         <motion.div
@@ -364,7 +353,6 @@ const About = () => {
         </motion.div>
       </section>
 
-      {/* CTA */}
       <section className="relative px-6 pb-24">
 
         <motion.div
