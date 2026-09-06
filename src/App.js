@@ -17,6 +17,7 @@ import store from "./redux/store";
 import { OnlineUsersProvider } from "./context/OnlineUsersContext";
 import Home from "./components/Home";
 import About from "./components/About";
+import AuthInitializer from "./components/AuthInitializer";
 
 // App layout wrapper
 const AppLayout = () => {
@@ -111,10 +112,13 @@ const AppWithProviders = () => {
   );
 };
 
+
 function App() {
   return (
     <Provider store={store}>
-      <AppWithProviders />
+      <AuthInitializer>
+        <AppWithProviders />
+      </AuthInitializer>
     </Provider>
   );
 }

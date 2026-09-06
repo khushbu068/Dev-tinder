@@ -10,8 +10,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import api from "../utils/api";
+import { logoutUser } from "../redux/userSlice";
 import { socket } from "../utils/socket";
 
 const fadeIn = {
@@ -26,7 +27,7 @@ const fadeIn = {
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [unseenCount, setUnseenCount] = useState(0);
-
+const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // Reference for hamburger menu area
@@ -36,52 +37,37 @@ const Navbar = () => {
     (state) => state.requests.receiveRequests
   );
 
-  const { token } = useSelector((state) => state.users);
+const { currentUser } = useSelector(
+  (state) => state.users
+);
+const fetchUnseenCount = useCallback(async () => {
+  if (!currentUser) return;
 
-  const authToken = token || localStorage.getItem("token");
+  try {
+    const { data } = await api.get(
+      "/message/unseen-count"
+    );
 
-  // ===============================
-  // Fetch unseen messages
-  // ===============================
+    setUnseenCount(data.count || 0);
+  } catch (err) {
+    console.error(
+      "[Navbar] Unseen message fetch failed:",
+      err.message
+    );
+  }
+}, [currentUser]);
 
-  const fetchUnseenCount = useCallback(async () => {
-    if (!authToken) return;
+useEffect(() => {
+  if (!currentUser) return;
 
-    try {
-      const { data } = await api.get("/message/unseen-count", {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
+  fetchUnseenCount();
 
-      setUnseenCount(data.count || 0);
-    } catch (err) {
-      console.error(
-        "[Navbar] Unseen message fetch failed:",
-        err.message
-      );
-    }
-  }, [authToken]);
+  socket.on("new message", fetchUnseenCount);
 
-  // ===============================
-  // Socket listener
-  // ===============================
-
-  useEffect(() => {
-    if (!authToken) return;
-
-    fetchUnseenCount();
-
-    socket.on("new message", fetchUnseenCount);
-
-    return () => {
-      socket.off("new message", fetchUnseenCount);
-    };
-  }, [authToken, fetchUnseenCount]);
-
-  // ===============================
-  // Close menu when clicking outside
-  // ===============================
+  return () => {
+    socket.off("new message", fetchUnseenCount);
+  };
+}, [currentUser, fetchUnseenCount]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -103,9 +89,6 @@ const Navbar = () => {
     };
   }, []);
 
-  // ===============================
-  // Close menu with Escape
-  // ===============================
 
   useEffect(() => {
     const handleEscape = (event) => {
@@ -124,33 +107,25 @@ const Navbar = () => {
     };
   }, []);
 
-  // ===============================
-  // Navigation helper
-  // ===============================
 
   const handleNavigation = (path) => {
     setMenuOpen(false);
     navigate(path);
   };
 
-  // ===============================
-  // Logout
-  // ===============================
+const handleLogout = async () => {
+  try {
+    await api.post("/logOut");
 
-  const handleLogout = async () => {
-    try {
-      await api.post("/logOut", {});
+    dispatch(logoutUser());
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("userId");
+    setMenuOpen(false);
 
-      setMenuOpen(false);
-
-      navigate("/login");
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
-  };
+    navigate("/login", { replace: true });
+  } catch (err) {
+    console.error("Logout failed:", err);
+  }
+};
 
   return (
     <motion.nav
@@ -192,15 +167,7 @@ const Navbar = () => {
             transition={{ duration: 0.15 }}
             className="absolute left-0 top-full mt-2 w-28 bg-[#4F959D] text-white shadow-xl rounded-lg overflow-hidden z-50 border border-white/10"
           >
-            <li>
-              <button
-                type="button"
-                onClick={() => handleNavigation("/login")}
-                className="w-full text-left text-xs px-2  py-1.5 hover:bg-[#98D2C0] hover:text-gray-900 transition-colors duration-200"
-              >
-                Home
-              </button>
-            </li>
+ 
 
             <li>
               <button

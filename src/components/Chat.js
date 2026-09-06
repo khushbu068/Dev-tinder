@@ -1,236 +1,401 @@
-import React, { useState, useRef } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEye,
-  faEyeSlash,
-} from "@fortawesome/free-solid-svg-icons";
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { loginSuccess, setUsers } from "../redux/userSlice";
-import { useDispatch } from "react-redux";
+import { useEffect, useState, useRef } from "react";
+import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+import { socket } from "../utils/socket";
+import { useOnlineUsers } from "../context/OnlineUsersContext";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 import api from "../utils/api";
 
-const fadeIn = {
-  hidden: { opacity: 0, y: -10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5 },
-  },
-};
+const Chat = () => {
+  const { id: receiverUserId } = useParams();
 
-const Login = () => {
-  const [isSignup, setIsSignup] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const { currentUser } = useSelector(
+    (state) => state.users
+  );
 
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const [chat, setChat] = useState(null);
+  const [receiverId, setReceiverId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  const firstNameRef = useRef(null);
-  const lastNameRef = useRef(null);
-  const emailRef = useRef(null);
-  const passwordRef = useRef(null);
+  const { onlineUsers } = useOnlineUsers();
 
-  const toggleSignup = () => {
-    setIsSignup(!isSignup);
-    setErrorMessage("");
-  };
+  const isOnline = onlineUsers.includes(receiverId);
 
-  const signupUser = async () => {
-    setErrorMessage("");
+  const messagesEndRef = useRef(null);
 
-    const userData = {
-      firstName: firstNameRef.current?.value.trim(),
-      lastName: lastNameRef.current?.value.trim(),
-      email: emailRef.current?.value.trim(),
-      password: passwordRef.current?.value.trim(),
-    };
+  const receiverName =
+    chat && receiverId
+      ? chat.users.find(
+          (u) => u._id === receiverId
+        )?.firstName || "Friend"
+      : "Friend";
 
+  // ===============================
+  // Access / Create Chat
+  // ===============================
+
+  const accessChat = async () => {
     try {
-      const response = await api.post(
-        "/SignUp",
-        userData
+      const { data } = await api.post(
+        "/accessChat",
+        {
+          userId: receiverUserId,
+        }
       );
 
-      console.log("Signup Response:", response.data);
+      setChat(data);
 
-      alert("Signup successful");
+      const otherUser = data.users.find(
+        (u) => u._id !== currentUser._id
+      );
 
-      setIsSignup(false);
+      setReceiverId(otherUser?._id);
     } catch (err) {
-      setErrorMessage(
-        err.response?.data?.error || "Signup failed"
+      console.error(
+        "[accessChat] Error:",
+        err.response?.data || err.message
       );
     }
   };
 
-  const loginUser = async () => {
-    setErrorMessage("");
+  // ===============================
+  // Fetch Messages
+  // ===============================
 
-    const userData = {
-      email: emailRef.current?.value,
-      password: passwordRef.current?.value,
-    };
+  const fetchMessages = async (chatId) => {
+    try {
+      setLoading(true);
+
+      const { data } = await api.get(
+        `/message/${chatId}`
+      );
+
+      setMessages(data);
+    } catch (err) {
+      console.error(
+        "[fetchMessages] Error:",
+        err.response?.data || err.message
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ===============================
+  // Send Message
+  // ===============================
+
+  const sendMessage = async () => {
+    if (
+      !newMessage.trim() ||
+      !currentUser ||
+      !receiverId ||
+      !chat?._id
+    ) {
+      return;
+    }
 
     try {
-      const response = await api.post(
-        "/loginUser",
-        userData
+      const { data } = await api.post(
+        "/message/newChat",
+        {
+          content: newMessage,
+          chatId: chat._id,
+          receiverId,
+        }
       );
 
-      console.log("Login Response:", response.data);
+      setMessages((prev) => [
+        ...prev,
+        data,
+      ]);
 
-      localStorage.setItem(
-        "token",
-        response.data.token
-      );
+      setNewMessage("");
+      setShowEmojiPicker(false);
 
-      dispatch(
-        loginSuccess({
-          token: response.data.token,
-          user: response.data.user,
-        })
-      );
-
-      dispatch(
-        setUsers([response.data.user])
-      );
-
-      alert("Login successful");
-
-      navigate("/connections");
+      socket.emit("new message", data);
     } catch (err) {
-      setErrorMessage(
-        err.response?.data?.error || "Login failed"
+      console.error(
+        "[sendMessage] Error:",
+        err.response?.data || err.message
       );
     }
   };
 
-  const handleSubmit = () => {
-    isSignup ? signupUser() : loginUser();
+  // ===============================
+  // Typing
+  // ===============================
+
+  const handleTyping = (e) => {
+    setNewMessage(e.target.value);
+
+    if (!socket.connected || !chat) return;
+
+    if (!isTyping) {
+      setIsTyping(true);
+      socket.emit("typing", chat._id);
+    }
+
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+
+    const timeout = setTimeout(() => {
+      socket.emit(
+        "stop typing",
+        chat._id
+      );
+
+      setIsTyping(false);
+    }, 2000);
+
+    setTypingTimeout(timeout);
   };
+
+  // ===============================
+  // Socket Setup
+  // ===============================
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    socket.emit(
+      "setup",
+      currentUser
+    );
+
+    socket.on("connected", () => {
+      console.log("Socket connected");
+    });
+
+    return () => {
+      socket.off("connected");
+    };
+  }, [currentUser]);
+
+  // ===============================
+  // Join Chat
+  // ===============================
+
+  useEffect(() => {
+    if (chat?._id) {
+      socket.emit(
+        "join chat",
+        chat._id
+      );
+    }
+  }, [chat]);
+
+  // ===============================
+  // Receive Message
+  // ===============================
+
+  useEffect(() => {
+    const handleMessageReceived = (newMsg) => {
+      if (
+        chat &&
+        newMsg.chat._id === chat._id
+      ) {
+        setMessages((prev) => [
+          ...prev,
+          newMsg,
+        ]);
+      }
+    };
+
+    socket.on(
+      "message received",
+      handleMessageReceived
+    );
+
+    return () => {
+      socket.off(
+        "message received",
+        handleMessageReceived
+      );
+    };
+  }, [chat]);
+
+  // ===============================
+  // Typing Events
+  // ===============================
+
+  useEffect(() => {
+    socket.on(
+      "typing",
+      () => setOtherUserTyping(true)
+    );
+
+    socket.on(
+      "stop typing",
+      () => setOtherUserTyping(false)
+    );
+
+    return () => {
+      socket.off("typing");
+      socket.off("stop typing");
+    };
+  }, []);
+
+  // ===============================
+  // Access Chat on Page Open
+  // ===============================
+
+  useEffect(() => {
+    if (
+      receiverUserId &&
+      currentUser
+    ) {
+      accessChat();
+    }
+  }, [
+    receiverUserId,
+    currentUser,
+  ]);
+
+  // ===============================
+  // Fetch Messages
+  // ===============================
+
+  useEffect(() => {
+    if (chat?._id) {
+      fetchMessages(chat._id);
+    }
+  }, [chat]);
+
+  // ===============================
+  // Scroll to Bottom
+  // ===============================
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages]);
 
   return (
-    <motion.div
-      variants={fadeIn}
-      initial={{
-        opacity: 0,
-        scale: 0.9,
-      }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-      }}
-      transition={{ duration: 0.5 }}
-      className="flex justify-center items-center p-7 mt-20"
-    >
-      <motion.div
-        initial={{
-          y: -50,
-          opacity: 0,
-        }}
-        animate={{
-          y: 0,
-          opacity: 1,
-        }}
-        transition={{
-          duration: 0.5,
-          delay: 0.2,
-        }}
-        className="relative card w-96 shadow-2xl p-6 bg-transparent text-gray-300 backdrop-blur-md bg-navbar border border-navbar-border hover:shadow-xl hover:border-white"
-      >
-        <h2 className="text-xl text-white font-semibold text-center mb-4">
-          {isSignup ? "Sign Up" : "Login"}
+    <div className="h-full flex flex-col p-4 bg-base-100 rounded-md shadow-md">
+
+      <div className="mb-4 pb-2 text-center">
+        <h2 className="text-2xl font-semibold text-primary flex items-center justify-center gap-2">
+          Chat with {receiverName}
+
+          {isOnline && (
+            <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+          )}
         </h2>
+      </div>
 
-        {isSignup && (
-          <>
-            <motion.input
-              type="text"
-              placeholder="First Name"
-              ref={firstNameRef}
-              className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
-            />
+      <div className="flex-1 overflow-y-auto space-y-2 bg-base-200 p-4 rounded">
 
-            <motion.input
-              type="text"
-              placeholder="Last Name"
-              ref={lastNameRef}
-              className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
-            />
-          </>
+        {loading ? (
+          <div className="flex justify-center items-center h-[40vh]">
+            <span className="loading loading-dots loading-lg text-primary" />
+          </div>
+        ) : messages.length === 0 ? (
+          <p className="text-center text-gray-400">
+            No messages yet.
+          </p>
+        ) : (
+          messages.map((msg) => (
+            <div
+              key={msg._id}
+              className={`chat ${
+                msg.sender._id === currentUser._id
+                  ? "chat-end"
+                  : "chat-start"
+              }`}
+            >
+              <div className="chat-bubble">
+                {msg.content}
+
+                {msg.sender._id === currentUser._id && (
+                  <div className="text-[10px] mt-1 text-right text-gray-400">
+                    {msg.seenBy?.length > 1
+                      ? "Seen ✅✅"
+                      : "Sent ✅"}
+                  </div>
+                )}
+              </div>
+
+              <div className="text-xs text-gray-400">
+                {msg.sender.firstName}
+              </div>
+            </div>
+          ))
         )}
 
-        <motion.input
-          type="email"
-          placeholder="Email"
-          ref={emailRef}
-          className="input input-bordered bg-white text-black w-full mb-3 hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
-        />
+        {otherUserTyping && (
+          <div className="text-sm italic text-gray-400 px-4">
+            Typing...
+          </div>
+        )}
 
-        <div className="relative w-full mb-3">
+        <div ref={messagesEndRef} />
+      </div>
 
-          <motion.input
-            type={
-              showPassword
-                ? "text"
-                : "password"
+      <div className="mt-4 flex items-end gap-2">
+
+        <div className="relative flex-1">
+
+          <input
+            type="text"
+            className="input input-bordered w-full pr-10 text-sm h-12"
+            placeholder="Type your message..."
+            value={newMessage}
+            onChange={handleTyping}
+            onKeyDown={(e) =>
+              e.key === "Enter" &&
+              sendMessage()
             }
-            placeholder="Password"
-            ref={passwordRef}
-            className="input input-bordered bg-white text-black w-full hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
           />
 
           <button
             type="button"
-            className="absolute right-3 top-3"
+            className="absolute right-2 top-2 text-xl"
             onClick={() =>
-              setShowPassword(!showPassword)
+              setShowEmojiPicker(
+                (prev) => !prev
+              )
             }
           >
-            <FontAwesomeIcon
-              icon={
-                showPassword
-                  ? faEyeSlash
-                  : faEye
-              }
-            />
+            😊
           </button>
 
+          {showEmojiPicker && (
+            <div className="absolute bottom-14 right-0 z-10">
+              <Picker
+                data={data}
+                onEmojiSelect={(emoji) =>
+                  setNewMessage(
+                    (prev) =>
+                      prev + emoji.native
+                  )
+                }
+                theme="light"
+              />
+            </div>
+          )}
         </div>
 
-        {errorMessage && (
-          <motion.p
-            className="text-highlight text-sm text-center mb-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            {errorMessage}
-          </motion.p>
-        )}
-
-        <motion.button
-          className="btn btn-primary bg-primary text-white w-full hover:bg-gray-700 hover:text-white transition duration-200 ease-in-out"
-          onClick={handleSubmit}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+        <button
+          className="btn btn-primary px-4 py-2 h-12 text-sm min-w-[64px]"
+          onClick={sendMessage}
+          disabled={!newMessage.trim()}
         >
-          {isSignup ? "Sign Up" : "Login"}
-        </motion.button>
+          Send
+        </button>
 
-        <p
-          className="text-center text-white mt-3 cursor-pointer hover:underline"
-          onClick={toggleSignup}
-        >
-          {isSignup
-            ? "Already have an account? Login"
-            : "Don't have an account? Sign Up"}
-        </p>
-
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 
-export default Login;
+export default Chat;

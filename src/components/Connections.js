@@ -1,11 +1,10 @@
 import React, {
-  useCallback,
   useEffect,
   useState,
 } from "react";
+
 import { useDispatch, useSelector } from "react-redux";
 import { setUsers } from "../redux/userSlice";
-import { setRequests } from "../redux/requestSlice";
 import api from "../utils/api";
 import { motion } from "framer-motion";
 
@@ -21,83 +20,55 @@ const fadeIn = {
 const Connections = () => {
   const dispatch = useDispatch();
 
-  const { users } = useSelector((state) => state.users);
-
+const { users, currentUser } = useSelector(
+  (state) => state.users
+);
   const [loading, setLoading] = useState(true);
-  const [visitedAllUsers, setVisitedAllUsers] = useState(false);
-
-  const loggedInId = localStorage.getItem("userId");
-
-  const currentUser = users.length > 0 ? users[0] : null;
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await api.get("/feed");
-
-        const filteredUsers = response.data.feedUsers.filter(
-          (user) => user._id !== loggedInId
-        );
-
-        dispatch(setUsers(filteredUsers));
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, [dispatch, loggedInId]);
-
-const fetchRequests = useCallback(async () => {
-  try {
-    const res = await api.get(
-      "/request/receiverAllConnectionReq"
-    );
-
-    dispatch(
-      setRequests(
-        res.data.receiveRequest || []
-      )
-    );
-  } catch (error) {
-    console.error(
-      "Error fetching requests:",
-      error
-    );
-  } finally {
-    setLoading(false);
-  }
-}, [dispatch]);
+const [visitedAllUsers, setVisitedAllUsers] = useState(false);
+  const displayedUser = users[0] || null;
 
 useEffect(() => {
-  fetchRequests();
-}, [fetchRequests]);
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
 
+      const response = await api.get("/feed");
+
+      dispatch(
+        setUsers(response.data.feedUsers || [])
+      );
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchUsers();
+}, [dispatch]); 
   useEffect(() => {
     if (!currentUser) {
       setVisitedAllUsers(true);
     }
   }, [currentUser]);
 
-  const handleAction = async (actionType) => {
-    if (!currentUser) return;
+const handleAction = async (actionType) => {
+  if (!displayedUser) return;
 
-    try {
-      await api.post(
-        `/request/send/${actionType}/${currentUser._id}`,
-        {}
-      );
+  try {
+    await api.post(
+      `/request/send/${actionType}/${displayedUser._id}`,
+      {}
+    );
 
-      dispatch(setUsers(users.slice(1)));
-    } catch (error) {
-      console.error(
-        `Failed to ${actionType} user:`,
-        error.response?.data || error
-      );
-    }
-  };
+    dispatch(setUsers(users.slice(1)));
+  } catch (error) {
+    console.error(
+      `Failed to ${actionType} user:`,
+      error.response?.data || error
+    );
+  }
+};
 
   if (loading) {
     return (
@@ -143,7 +114,7 @@ useEffect(() => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        {currentUser && (
+        {displayedUser && (
           <div className="card w-96 shadow-2xl p-6 bg-transparent text-gray-300 backdrop-blur-md border border-navbar-border hover:shadow-xl hover:border-white">
             <figure>
               <img
@@ -155,7 +126,7 @@ useEffect(() => {
 
             <div className="card-body p-4">
               <h2 className="card-title">
-                {currentUser.firstName} {currentUser.lastName}
+                {displayedUser.firstName} {displayedUser.lastName}
               </h2>
 
               <p>{currentUser.email}</p>

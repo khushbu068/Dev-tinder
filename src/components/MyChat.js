@@ -5,12 +5,9 @@ import api from "../utils/api";
 import { useOnlineUsers } from "../context/OnlineUsersContext";
 
 const MyChat = () => {
-  const { currentUser, token } = useSelector(
-    (state) => state.users
-  );
-
-  const authToken =
-    token || localStorage.getItem("token");
+const { currentUser } = useSelector(
+  (state) => state.users
+);
 
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,17 +19,9 @@ const MyChat = () => {
 const fetchChats = useCallback(async () => {
   try {
     console.log("[MyChat] Fetching user chats...");
-
     setLoading(true);
-
-    const { data } = await api.get("/fetchChat", {
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-    });
-
+    const { data } = await api.get("/fetchChat");
     console.log("[MyChat] Chats fetched:", data);
-
     setChats(data);
   } catch (err) {
     console.error(
@@ -42,13 +31,13 @@ const fetchChats = useCallback(async () => {
   } finally {
     setLoading(false);
   }
-}, [authToken]);
+}, []);
 
 useEffect(() => {
-  if (authToken && currentUser) {
+  if (currentUser) {
     fetchChats();
   }
-}, [authToken, currentUser, fetchChats]);
+}, [currentUser, fetchChats]);
 
   return (
     <div className="p-4 min-h-[60vh]">

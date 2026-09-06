@@ -7,15 +7,15 @@ const Home = () => {
   return (
 <div className="relative h-full overflow-hidden text-white">
         {/* Background Image with opacity */}
-      <div
-        className="absolute inset-0 bg-cover bg-center  opacity-50 z-0"
+<div 
+  className="absolute inset-0 bg-cover bg-center z-0"  
         style={{
           backgroundImage: `url('/developer background.jpg')`,
         }}
       />
 
       {/* Optional dark overlay - also affects only background */}
-      <div className="absolute inset-0 bg-black/40" />
+<div className="absolute inset-0 bg-black/30 z-0" />
 
       {/* Decorative floating blobs */}
       <motion.div

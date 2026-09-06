@@ -6,8 +6,7 @@ const initialState = {
   interestedUsers: [],
   ignoredUsers: [],
   currentIndex: 0,
-  isAuthenticated: !!localStorage.getItem("token"),
-  token: localStorage.getItem("token") || null,
+  isAuthenticated: false,
 };
 
 const userSlice = createSlice({
@@ -44,31 +43,25 @@ const userSlice = createSlice({
       }
     },
 
-    logoutUser: (state) => {
-      state.users = [];
-      state.interestedUsers = [];
-      state.ignoredUsers = [];
-      state.currentIndex = 0;
-      state.currentUser = null;
-      state.isAuthenticated = false;
-      state.token = null;
-
-      localStorage.removeItem("token");
-    },
+logoutUser: (state) => {
+  state.users = [];
+  state.interestedUsers = [];
+  state.ignoredUsers = [];
+  state.currentIndex = 0;
+  state.currentUser = null;
+  state.isAuthenticated = false;
+},
 
     loginSuccess: (state, action) => {
-      const { token, user } = action.payload;
+  const { user } = action.payload;
 
-      if (!user || !token) {
-        return;
-      }
+  if (!user) {
+    return;
+  }
 
-      localStorage.setItem("token", token);
-
-      state.isAuthenticated = true;
-      state.token = token;
-      state.currentUser = user;
-    },
+  state.isAuthenticated = true;
+  state.currentUser = user;
+},
   },
 });
 
