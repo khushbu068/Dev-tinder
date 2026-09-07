@@ -40,30 +40,26 @@ const Chat = () => {
   // ===============================
   // Access / Create Chat
   // ===============================
+const accessChat = useCallback(async () => {
+  try {
+    const { data } = await api.post("/accessChat", {
+      userId: receiverUserId,
+    });
 
-  const accessChat = async () => {
-    try {
-      const { data } = await api.post(
-        "/accessChat",
-        {
-          userId: receiverUserId,
-        }
-      );
+    setChat(data);
 
-      setChat(data);
+    const otherUser = data.users.find(
+      (u) => u._id !== currentUser._id
+    );
 
-      const otherUser = data.users.find(
-        (u) => u._id !== currentUser._id
-      );
-
-      setReceiverId(otherUser?._id);
-    } catch (err) {
-      console.error(
-        "[accessChat] Error:",
-        err.response?.data || err.message
-      );
-    }
-  };
+    setReceiverId(otherUser?._id);
+  } catch (err) {
+    console.error(
+      "[accessChat] Error:",
+      err.response?.data || err.message
+    );
+  }
+}, [receiverUserId, currentUser]);
 
   // ===============================
   // Fetch Messages

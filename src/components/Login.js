@@ -10,7 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { loginSuccess, setUsers } from "../redux/userSlice";
+import { loginSuccess } from "../redux/userSlice";
 import { useDispatch } from "react-redux";
 import api from "../utils/api";
 
