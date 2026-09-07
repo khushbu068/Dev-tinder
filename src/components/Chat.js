@@ -244,17 +244,18 @@ const accessChat = useCallback(async () => {
   // Access Chat on Page Open
   // ===============================
 
-  useEffect(() => {
-    if (
-      receiverUserId &&
-      currentUser
-    ) {
-      accessChat();
-    }
-  }, [
-    receiverUserId,
-    currentUser,
-  ]);
+useEffect(() => {
+  if (
+    receiverUserId &&
+    currentUser
+  ) {
+    accessChat();
+  }
+}, [
+  receiverUserId,
+  currentUser,
+  accessChat,
+]);
 
   // ===============================
   // Fetch Messages
